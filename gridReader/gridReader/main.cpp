@@ -23,6 +23,12 @@
 #include <vtkGenericDataObjectReader.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
+#include <vtkCell.h>
+#include <vtkPointData.h>
+
+#include <vtkDoubleArray.h>
+
+#include <vtkAlgorithmOutput.h>
 
 #include <vtkPolyData.h>
 #include <vtkCleanPolyData.h>
@@ -31,6 +37,8 @@
 #include <vtkDelaunay3D.h>
 
 #include <vtkGeometryFilter.h>
+
+#include <vtkAppendFilter.h>
 
 #include <vtkQuadricDecimation.h>
 #include <vtkDecimatePro.h>
@@ -80,6 +88,47 @@ vtkSmartPointer<vtkActor> delaunay3d(std::string filename) {
     return delaunayActor;
 }
 
+vtkPolyData* ugridToPolyData (vtkUnstructuredGrid *grid) {
+    vtkSmartPointer<vtkGeometryFilter> geoFilter = vtkSmartPointer<vtkGeometryFilter>::New();
+    geoFilter->SetInputData(grid);
+    geoFilter->Update();
+    return geoFilter->GetOutput();
+}
+
+vtkUnstructuredGrid* datasetToUgrid (vtkDataSet *dataset) {
+    //Append filter: Dataset --> to UnstructuredGrid
+    vtkSmartPointer<vtkAppendFilter> appender = vtkSmartPointer<vtkAppendFilter>::New();
+    appender->AddInputData(dataset);
+    appender->Update();
+    
+    return appender->GetOutput();
+}
+
+void startRendering(vtkAlgorithmOutput *out) {
+    //Mapper
+    vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New();
+    mapper->SetInputConnection(out);
+    
+    //Actor
+    vtkSmartPointer<vtkActor> ugridActor = vtkSmartPointer<vtkActor>::New();
+    ugridActor->SetMapper(mapper);
+    
+    
+    //Renderer
+    vtkSmartPointer<vtkRenderer> ugridRenderer = vtkSmartPointer<vtkRenderer>::New();
+    ugridRenderer->AddActor(ugridActor);
+    ugridRenderer->SetBackground(0.1, 0.2, 0.4);
+    
+    //Render Window & Interactor
+    vtkSmartPointer<vtkRenderWindow> renWin = vtkSmartPointer<vtkRenderWindow>::New();
+    renWin->AddRenderer(ugridRenderer);
+    renWin->SetSize(1024, 1024);
+    vtkSmartPointer<vtkRenderWindowInteractor> iren = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    iren->SetRenderWindow(renWin);
+    iren->Initialize();
+    iren->Start();
+}
+
 int main(int argc, const char * argv[]) {
     
     
@@ -122,40 +171,13 @@ int main(int argc, const char * argv[]) {
     } else if (reader->IsFileUnstructuredGrid()) {
         std::cout << "ouput is unstructured grid" << std::endl;
         
-        vtkSmartPointer<vtkActor> delaunay = delaunay3d(inputFilename);
+        vtkIndent *indent = vtkIndent::New(); //for PrintSelf calls
         
         //Initialize UnstructuredGridReader
         vtkSmartPointer<vtkUnstructuredGridReader> gridReader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
         gridReader->SetFileName(inputFilename.c_str());
         gridReader->Update();
-        
         vtkSmartPointer<vtkUnstructuredGrid> ugrid = gridReader->GetOutput();
-        std::cout << "cell type 0; " << ugrid->GetCellType(0) << std::endl;
-        std::cout << "cell type 100; " << ugrid->GetCellType(100) << std::endl;
-        std::cout << "cell type 1000; " << ugrid->GetCellType(1000) << std::endl;
-        std::cout << "cell type 6000; " << ugrid->GetCellType(6000) << std::endl;
-        
-        
-        //Convert grid to PolyData for decimation
-        /*vtkSmartPointer<vtkGeometryFilter> geoFilter = vtkSmartPointer<vtkGeometryFilter>::New();
-        geoFilter->SetInputData(ugrid);
-        geoFilter->Update();
-        vtkPolyData *poly = geoFilter->GetOutput();
-        
-        std::cout << "polydata cells:  " << poly->GetNumberOfCells() << std::endl;
-        std::cout << "polydata points: " << poly->GetNumberOfPoints() << std::endl;
-        
-        //Decimation
-        vtkSmartPointer<vtkDecimatePro> decimate = vtkSmartPointer<vtkDecimatePro>::New();
-        decimate->SetInputData(poly);
-        decimate->SetTargetReduction(.1);
-        decimate->Update();
-        
-        vtkSmartPointer<vtkPolyData> decimated = vtkSmartPointer<vtkPolyData>::New();
-        decimated->ShallowCopy(decimate->GetOutput());
-        
-        std::cout << "decimated number of cells: " << decimated->GetNumberOfCells() << std::endl;*/
-        
         
         //Field data --> to Cells
         vtkSmartPointer<vtkFieldDataToAttributeDataFilter> toCellFilter = vtkSmartPointer<vtkFieldDataToAttributeDataFilter>::New();
@@ -163,34 +185,13 @@ int main(int argc, const char * argv[]) {
         toCellFilter->SetInputFieldToCellDataField();
         toCellFilter->SetOutputAttributeDataToCellData();
         
+        /*vtkDataArray *arr = ugrid->GetPointData()->GetArray("alpha.water");
+        std::cout << arr->GetSize() << std::endl;*/
         
         toCellFilter->SetScalarComponent(0, "alpha.water", 0);
-
+        //toCellFilter->SetScalarComponent(0, "U", 0);
         
-        //Mapper
-        vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New();
-        mapper->SetInputConnection(toCellFilter->GetOutputPort());
-        
-        //Actor
-        vtkSmartPointer<vtkActor> ugridActor = vtkSmartPointer<vtkActor>::New();
-        ugridActor->SetMapper(mapper);
-        
-        
-        //Renderer
-        vtkSmartPointer<vtkRenderer> ugridRenderer = vtkSmartPointer<vtkRenderer>::New();
-        ugridRenderer->AddActor(delaunay);
-        ugridRenderer->SetBackground(0.1, 0.2, 0.4);
-        
-        //Render Window & Interactor
-        vtkSmartPointer<vtkRenderWindow> renWin = vtkSmartPointer<vtkRenderWindow>::New();
-        renWin->AddRenderer(ugridRenderer);
-        renWin->SetSize(1024, 1024);
-        vtkSmartPointer<vtkRenderWindowInteractor> iren = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-        iren->SetRenderWindow(renWin);
-        iren->Initialize();
-        iren->Start();
-        
-        //std::cout << "number of cells: " << ugrid->GetNumberOfCells() << std::endl;
+        startRendering(toCellFilter->GetOutputPort());
     } else if (reader->IsFileStructuredGrid()) {
         std::cout << "output is structured grid" << std::endl;
     }
