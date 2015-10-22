@@ -49,6 +49,8 @@
 
 #include <vtkAppendFilter.h>
 
+#include <vtkDataSetTriangleFilter.h>
+
 #include <vtkQuadricDecimation.h>
 #include <vtkDecimatePro.h>
 
@@ -194,149 +196,36 @@ int main(int argc, const char * argv[]) {
         vtkSmartPointer<vtkUnstructuredGridReader> gridReader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
         gridReader->SetFileName(inputFilename.c_str());
         gridReader->Update();
+        
         vtkSmartPointer<vtkUnstructuredGrid> ugrid = gridReader->GetOutput();
+        std::cout << ugrid->GetNumberOfCells() << std::endl;
         
-        //Field data --> to Cells
-        vtkSmartPointer<vtkFieldDataToAttributeDataFilter> toCellFilter = vtkSmartPointer<vtkFieldDataToAttributeDataFilter>::New();
-        toCellFilter->SetInputConnection(gridReader->GetOutputPort());
-        toCellFilter->SetInputFieldToCellDataField();
-        toCellFilter->SetOutputAttributeDataToCellData();
+        vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter = vtkSmartPointer<vtkDataSetTriangleFilter>::New();
+        triangleFilter->SetInputConnection(gridReader->GetOutputPort());
+        triangleFilter->Update();
         
-        /*vtkDataArray *arr = ugrid->GetPointData()->GetArray("alpha.water");
-         vtkFloatArray *floatArr = vtkFloatArray::SafeDownCast(arr);
-         if(floatArr){
-         std::cout << "is array" << std::endl;
-         for(int i = 0; i < floatArr->GetSize(); i++) {
-         float alphaWater;
-         alphaWater = floatArr->GetValue(i);
-         if(i%100 == 0){
-         std::cout << alphaWater << std::endl;
-         }
-         }
-         }*/
+        std::cout << triangleFilter->GetOutput()->GetNumberOfCells() << std::endl;
+        writeUgrid(triangleFilter->GetOutput(), "/Volumes/EXTERN/trifilter_dambreak.vtu");
         
-        //Iterator over all grid cells
-        vtkIdType cellId;
-        vtkIdType lastCellId = -1;
-        int mergeCounter = 0;
-        std::list<vtkIdType> lastCellNeighbours;
-        vtkSmartPointer<vtkPoints> mergePoints = vtkSmartPointer<vtkPoints>::New();
-        vtkSmartPointer<vtkCellArray> hexs = vtkSmartPointer<vtkCellArray>::New();
-        vtkSmartPointer<vtkUnstructuredGrid> mergeGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+        startRendering(triangleFilter->GetOutputPort());
         
-        for(vtkIdType c = 0; c < ugrid->GetNumberOfCells(); c++){
-            cellId = c;
-
-            std::list<vtkIdType> neighbours;
-            getNeighbourCellIds(ugrid, cellId, &neighbours);
-            if (shareNeighbours(neighbours, lastCellNeighbours)) {
-                std::cout << cellId << " and " << lastCellId << " share neighbours" << std::endl;
-            } else {
-                if (neighbours.size() == 8) {
-                    std::cout << "can merge: " << cellId << std::endl;
-                }
-            }
-            
-            /*
-             Special case for dambreak:
-             
-             - INNER cells have 8 neighbours
-             - BOUNDARY cells have 5 neighbours
-             - CORNER cells have 3 neighbours
-             
-             this is due to the "2D" layout (only 1 row of cells on the z-axis
-             
-             ==> Only merge if cell is INNER cell
-             
-             TODO: Adapt this for "real" 3D Grid
-            */
-            if(neighbours.size() == 8 && !shareNeighbours(neighbours, lastCellNeighbours)) {
-                mergeCounter++;
-                lastCellId = cellId;
-                lastCellNeighbours = neighbours;
-                /*
-                    Build a collection of all points of every neighbour cell
-                */
-                vtkSmartPointer<vtkPoints> neighbourhoodPoints = vtkSmartPointer<vtkPoints>::New();
-                for(std::list<vtkIdType>::iterator it1 = neighbours.begin(); it1 != neighbours.end(); it1++) {
-                    vtkPoints *cellPoints = ugrid->GetCell(*it1)->GetPoints();
-                    for (vtkIdType p = 0; p < cellPoints->GetNumberOfPoints(); p++) {
-                        double pointComponents[3];
-                        cellPoints->GetPoint(p, pointComponents);
-                        neighbourhoodPoints->InsertNextPoint(pointComponents);
-                    }
-                }
-                
-                /*
-                    Get the outer bounds of the collection of points
-                */
-                double bounds[6];
-                neighbourhoodPoints->ComputeBounds();
-                neighbourhoodPoints->GetBounds(bounds);
-                double xmin = bounds[0];
-                double xmax = bounds[1];
-                double ymin = bounds[2];
-                double ymax = bounds[3];
-                double zmin = bounds[4];
-                double zmax = bounds[5];
-                
-                /*
-                    Build a collection of corner points for the outer bounds
-                */
-                double p0[3] = {xmin, ymin, zmin};
-                double p1[3] = {xmax, ymin, zmin};
-                double p2[3] = {xmax, ymax, zmin};
-                double p3[3] = {xmin, ymax, zmin};
-                double p4[3] = {xmin, ymin, zmax};
-                double p5[3] = {xmax, ymin, zmax};
-                double p6[3] = {xmax, ymax, zmax};
-                double p7[3] = {xmin, ymax, zmax};
-
-                
-                /*
-                    Create a hexahedron from the new corner points
-                */
-                vtkSmartPointer<vtkHexahedron> hex = vtkSmartPointer<vtkHexahedron>::New();
-                hex->GetPointIds()->SetId(0, mergePoints->InsertNextPoint(p0));
-                hex->GetPointIds()->SetId(1, mergePoints->InsertNextPoint(p1));
-                hex->GetPointIds()->SetId(2, mergePoints->InsertNextPoint(p2));
-                hex->GetPointIds()->SetId(3, mergePoints->InsertNextPoint(p3));
-                hex->GetPointIds()->SetId(4, mergePoints->InsertNextPoint(p4));
-                hex->GetPointIds()->SetId(5, mergePoints->InsertNextPoint(p5));
-                hex->GetPointIds()->SetId(6, mergePoints->InsertNextPoint(p6));
-                hex->GetPointIds()->SetId(7, mergePoints->InsertNextPoint(p7));
-
-                hexs->InsertNextCell(hex);
-                
-                mergeGrid->InsertNextCell(hex->GetCellType(), hex->GetPointIds());
-            }
-            
-        }
-        std::cout << "merge counter: " << mergeCounter << std::endl;
-        mergeGrid->SetPoints(mergePoints);
+        /*vtkSmartPointer<vtkPolyDataMapper> pMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+        pMapper->SetInputData(gridToPoly);
         
-        writeUgrid(mergeGrid, "/Volumes/EXTERN/Bachelor Arbeit/XCode/BachelorThesis/gridReader/mergeGrid.vtu");
-        mergeGrid->PrintSelf(std::cout, *indent);
+        vtkSmartPointer<vtkActor> pActor = vtkSmartPointer<vtkActor>::New();
+        pActor->SetMapper(pMapper);
         
-        vtkSmartPointer<vtkDataSetMapper> mp = vtkSmartPointer<vtkDataSetMapper>::New();
-        mp->SetInputData(mergeGrid);
-        vtkSmartPointer<vtkActor> ac = vtkSmartPointer<vtkActor>::New();
-        ac->SetMapper(mp);
-        vtkSmartPointer<vtkRenderer> rn = vtkSmartPointer<vtkRenderer>::New();
-        rn->AddActor(ac);
-        rn->SetBackground(.2, .3, .4);
-        vtkSmartPointer<vtkRenderWindow> rw = vtkSmartPointer<vtkRenderWindow>::New();
-        rw->AddRenderer(rn);
-        rw->SetSize(1024, 1024);
-        vtkSmartPointer<vtkRenderWindowInteractor> rwi = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-        rwi->SetRenderWindow(rw);
-        rw->Render();
-        rwi->Start();
+        vtkSmartPointer<vtkRenderer> pRen = vtkSmartPointer<vtkRenderer>::New();
+        pRen->AddActor(pActor);
         
-        toCellFilter->SetScalarComponent(0, "alpha.water", 0);
-        //toCellFilter->SetScalarComponent(0, "U", 0);
+        vtkSmartPointer<vtkRenderWindow> pWin = vtkSmartPointer<vtkRenderWindow>::New();
+        pWin->AddRenderer(pRen);
+        pWin->SetSize(1024, 1024);
+        vtkSmartPointer<vtkRenderWindowInteractor> pIn = vtkSmartPointer<vtkRenderWindowInteractor>::New();
+        pIn->SetRenderWindow(pWin);
+        pIn->Initialize();
+        pIn->Start();*/
         
-        //startRendering(toCellFilter->GetOutputPort());
     } else if (reader->IsFileStructuredGrid()) {
         std::cout << "output is structured grid" << std::endl;
     }
