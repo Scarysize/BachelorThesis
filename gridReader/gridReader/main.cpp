@@ -11,6 +11,9 @@
 
 #include <list>
 #include <algorithm>
+#include <stdlib.h>
+#include <vector>
+#include <math.h>
 
 #include <iostream>
 #include <vtkSmartPointer.h>
@@ -21,6 +24,7 @@
 #include <vtkUnstructuredGridGeometryFilter.h>
 
 #include <vtkHexahedron.h>
+#include <vtkTetra.h>
 
 #include <vtkGenericDataObjectReader.h>
 #include <vtkDataSet.h>
@@ -51,6 +55,8 @@
 
 #include <vtkDataSetTriangleFilter.h>
 
+#include <vtkExtractEdges.h>
+
 #include <vtkQuadricDecimation.h>
 #include <vtkDecimatePro.h>
 
@@ -62,9 +68,83 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 
+#include "Calculator.h"
+
+void printVector(double x[3]) {
+    std::vector<double> vector(x, x + sizeof(double[3]) / sizeof(double));
+    for(std::vector<double>::const_iterator i = vector.begin(); i != vector.end(); ++i) {
+        std::cout << *i << ' ';
+    }
+    std::cout << std::endl;
+}
+
+double calcCellGradient(vtkTetra *cell, vtkUnstructuredGrid *tetraGrid) {
+    double sum;
+    double gradientSum = 0;
+    
+    // Get Point Coordinates
+    vtkPoints* points = cell->GetPoints();
+    double A[3];
+    double B[3];
+    double C[3];
+    double D[3];
+    points->GetPoint(0, A);
+    points->GetPoint(1, B);
+    points->GetPoint(2, C);
+    points->GetPoint(4, D);
+    
+    // Calculate necessary vectors for gradients on each vertex
+    double BD[3];
+    double BC[3];
+    double AC[3];
+    double AD[3];
+    double AB[3];
+    Calculator::subtractVectors(B, D, BD);
+    Calculator::subtractVectors(B, C, BC);
+    Calculator::subtractVectors(A, C, AC);
+    Calculator::subtractVectors(A, D, AD);
+    Calculator::subtractVectors(A, B, AB);
+    
+    // Caluclate the gradients on each vertex (via cross product)
+    double gradA[3];
+    double gradB[3];
+    double gradC[3];
+    double gradD[3];
+    Calculator::calcCrossProduct(BD, BC, gradA);
+    Calculator::calcCrossProduct(AC, AD, gradB);
+    Calculator::calcCrossProduct(AD, AB, gradC);
+    Calculator::calcCrossProduct(AC, AB, gradD);
+    
+    
+    gradientSum += Calculator::calcVectorLength(gradA);
+    gradientSum += Calculator::calcVectorLength(gradB);
+    gradientSum += Calculator::calcVectorLength(gradC);
+    gradientSum += Calculator::calcVectorLength(gradD);
+    
+    std::cout << "gradient sum: " << gradientSum << std::endl;
+    
+    sum = (gradientSum * fabs(cell->ComputeVolume(A, B, C, D)))/4;
+    
+    std::cout << "unweighted gradient: " << sum << std::endl;
+    
+    return sum;
+}
+
+
+
+void hexahedronToTetrahedronGrid(vtkUnstructuredGrid *hexagrid, vtkUnstructuredGrid *tetraGrid){
+    vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter = vtkSmartPointer<vtkDataSetTriangleFilter>::New();
+    triangleFilter->SetInputData(hexagrid);
+    triangleFilter->Update();
+    std::cout << "Hexagrid with  " << hexagrid->GetNumberOfCells() << "  cells to \n";
+    std::cout << "Tetragrid with " << triangleFilter->GetOutput()->GetNumberOfCells() << " cells" << std::endl;
+    vtkSmartPointer<vtkUnstructuredGrid> grid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    tetraGrid = grid;
+}
+
 /*
-    Checks if two sets of cell neighbours have a common neighbour.
-*/
+ Checks if two sets of cell neighbours have a common neighbour.
+ */
 bool shareNeighbours(std::list<vtkIdType> currentCellNeighbourIds, std::list<vtkIdType> lastMergedCellIds) {
     for(std::list<vtkIdType>::iterator currentIt = currentCellNeighbourIds.begin(); currentIt != currentCellNeighbourIds.end(); currentIt++) {
         for (std::list<vtkIdType>::iterator lastMergedIt = lastMergedCellIds.begin(); lastMergedIt != lastMergedCellIds.end(); lastMergedIt++) {
@@ -77,8 +157,8 @@ bool shareNeighbours(std::list<vtkIdType> currentCellNeighbourIds, std::list<vtk
 }
 
 /*
-    Returns a id list of all neighbour cells of a given cell in a given grid.
-*/
+ Returns a id list of all neighbour cells of a given cell in a given grid.
+ */
 void getNeighbourCellIds (vtkUnstructuredGrid *ugrid, vtkIdType cellId, std::list<vtkIdType> *neighbours){
     
     vtkSmartPointer<vtkIdList> cellPointIds = vtkSmartPointer<vtkIdList>::New();
@@ -99,7 +179,7 @@ void getNeighbourCellIds (vtkUnstructuredGrid *ugrid, vtkIdType cellId, std::lis
         }
     }
     
-
+    
 }
 
 void printCellNeighbours (vtkIdType cellId, std::list<vtkIdType> *neighbours) {
@@ -114,8 +194,8 @@ void printCellNeighbours (vtkIdType cellId, std::list<vtkIdType> *neighbours) {
 }
 
 /*
-    Saves a unstructured grid to a given .vtu file (full path required).
-*/
+ Saves a unstructured grid to a given .vtu file (full path required).
+ */
 void writeUgrid(vtkUnstructuredGrid *ugrid, const char *filename) {
     vtkSmartPointer<vtkXMLUnstructuredGridWriter> writer = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
     writer->SetFileName(filename);
@@ -123,19 +203,33 @@ void writeUgrid(vtkUnstructuredGrid *ugrid, const char *filename) {
     writer->Write();
 }
 
-void startRendering(vtkAlgorithmOutput *out) {
+void startRendering(vtkAlgorithmOutput* grid) {
+    grid->PrintSelf(std::cout, *vtkIndent::New());
+    vtkSmartPointer<vtkExtractEdges> extract = vtkSmartPointer<vtkExtractEdges>::New();
+    extract->SetInputConnection(grid);
+    extract->Update();
+    
+    vtkSmartPointer<vtkPolyDataMapper> edgeMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+    edgeMapper->SetInputConnection(extract->GetOutputPort());
+    
+    vtkSmartPointer<vtkActor> edgeActor = vtkSmartPointer<vtkActor>::New();
+    edgeActor->SetMapper(edgeMapper);
+    edgeActor->GetProperty()->SetColor(0, 0, 0);
+    
     //Mapper
     vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New();
-    mapper->SetInputConnection(out);
+    mapper->SetInputConnection(grid);
     
     //Actor
     vtkSmartPointer<vtkActor> ugridActor = vtkSmartPointer<vtkActor>::New();
     ugridActor->SetMapper(mapper);
+    ugridActor->GetProperty()->SetOpacity(0.5);
     
     
     //Renderer
     vtkSmartPointer<vtkRenderer> ugridRenderer = vtkSmartPointer<vtkRenderer>::New();
     ugridRenderer->AddActor(ugridActor);
+    ugridRenderer->AddActor(edgeActor);
     ugridRenderer->SetBackground(0.1, 0.2, 0.4);
     
     //Render Window & Interactor
@@ -149,6 +243,7 @@ void startRendering(vtkAlgorithmOutput *out) {
 }
 
 int main(int argc, const char * argv[]) {
+    vtkIndent *indent = vtkIndent::New(); //for PrintSelf calls
     
     
     std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Dambreak/00_damBreak_2d/01_inter/VTK/01_inter_50.vtk";
@@ -159,75 +254,48 @@ int main(int argc, const char * argv[]) {
     reader->SetFileName(inputFilename.c_str());
     reader->Update();
     
-    if(reader->IsFilePolyData())
-    {
-        std::cout << "output is polydata" << std::endl;
-        //vtkPolyData *ouput = reader->GetPolyDataOutput();
+    if (reader->IsFileUnstructuredGrid()) {
+        std::cout << "input file is unstructured grid" << std::endl;
         
-        //MAPPER
-        vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        mapper->SetInputConnection(reader->GetOutputPort());
-        
-        //ACTOR
-        vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
-        actor->SetMapper(mapper);
-        
-        //RENDERER
-        vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
-        vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
-        renderWindow->AddRenderer(renderer);
-        vtkSmartPointer<vtkRenderWindowInteractor> iren = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-        iren->SetRenderWindow(renderWindow);
-        
-        renderer->AddActor(actor);
-        renderer->SetBackground(0.1, 0.2, 0.4);
-        renderWindow->SetSize(1024, 1024);
-        renderWindow->Render();
-        
-        iren->Start();
-        
-        //std::cout << "output has " << ouput->GetNumberOfPoints() << " points." << std::endl;
-    } else if (reader->IsFileUnstructuredGrid()) {
-        std::cout << "ouput is unstructured grid" << std::endl;
-        
-        vtkIndent *indent = vtkIndent::New(); //for PrintSelf calls
         
         //Initialize UnstructuredGridReader
         vtkSmartPointer<vtkUnstructuredGridReader> gridReader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
         gridReader->SetFileName(inputFilename.c_str());
         gridReader->Update();
         
-        vtkSmartPointer<vtkUnstructuredGrid> ugrid = gridReader->GetOutput();
-        std::cout << ugrid->GetNumberOfCells() << std::endl;
+        // --------------
+        // ORIGINAL GRID
+        // --------------
+        vtkSmartPointer<vtkUnstructuredGrid> ugrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+        ugrid = gridReader->GetOutput();
+        std::cout << "_original_ number of cells: " << ugrid->GetNumberOfCells() << std::endl;
         
+        // -----------------
+        // TETRAHEDRAL GRID
+        // -----------------
         vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter = vtkSmartPointer<vtkDataSetTriangleFilter>::New();
         triangleFilter->SetInputConnection(gridReader->GetOutputPort());
         triangleFilter->Update();
+        std::cout << "_after triangulation_ number of cells: " << triangleFilter->GetOutput()->GetNumberOfCells() << std::endl;
         
-        std::cout << triangleFilter->GetOutput()->GetNumberOfCells() << std::endl;
-        writeUgrid(triangleFilter->GetOutput(), "/Volumes/EXTERN/trifilter_dambreak.vtu");
+        vtkSmartPointer<vtkUnstructuredGrid>  tetraGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+        tetraGrid = triangleFilter->GetOutput();
         
-        startRendering(triangleFilter->GetOutputPort());
+        // Iterate over tetrahedras
+        vtkIdType cellId;
+        for(vtkIdType c = 0; c < 50 /* tetraGrid->GetNumberOfCells() */; c++){
+            cellId = c;
+            vtkTetra *tetra = vtkTetra::SafeDownCast(tetraGrid->GetCell(cellId));
+            calcCellGradient(tetra, tetraGrid);
+            //std::cout << "cell type: " << tetraGrid->GetCell(cellId)->GetCellType() << std::endl;
+        }
+        //startRendering(triangleFilter->GetOutputPort());
         
-        /*vtkSmartPointer<vtkPolyDataMapper> pMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-        pMapper->SetInputData(gridToPoly);
-        
-        vtkSmartPointer<vtkActor> pActor = vtkSmartPointer<vtkActor>::New();
-        pActor->SetMapper(pMapper);
-        
-        vtkSmartPointer<vtkRenderer> pRen = vtkSmartPointer<vtkRenderer>::New();
-        pRen->AddActor(pActor);
-        
-        vtkSmartPointer<vtkRenderWindow> pWin = vtkSmartPointer<vtkRenderWindow>::New();
-        pWin->AddRenderer(pRen);
-        pWin->SetSize(1024, 1024);
-        vtkSmartPointer<vtkRenderWindowInteractor> pIn = vtkSmartPointer<vtkRenderWindowInteractor>::New();
-        pIn->SetRenderWindow(pWin);
-        pIn->Initialize();
-        pIn->Start();*/
         
     } else if (reader->IsFileStructuredGrid()) {
-        std::cout << "output is structured grid" << std::endl;
+        std::cout << "input file is structured grid" << std::endl;
+    } else {
+        std::cerr << "error reading file" << std::endl;
     }
     
     return EXIT_SUCCESS;

@@ -123,6 +123,7 @@
 		304BE1471BC5B9C3008FAA72 /* libvtkViewsCore-6.1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 304BE0D81BC5B9C2008FAA72 /* libvtkViewsCore-6.1.a */; };
 		304BE1481BC5B9C3008FAA72 /* libvtkViewsGeovis-6.1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 304BE0D91BC5B9C2008FAA72 /* libvtkViewsGeovis-6.1.a */; };
 		304BE1491BC5B9C3008FAA72 /* libvtkViewsInfovis-6.1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 304BE0DA1BC5B9C2008FAA72 /* libvtkViewsInfovis-6.1.a */; };
+		30CCB48F1BE7A890007E1DD0 /* Calculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CCB48E1BE7A890007E1DD0 /* Calculator.cpp */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -255,6 +256,8 @@
 		304BE0D81BC5B9C2008FAA72 /* libvtkViewsCore-6.1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libvtkViewsCore-6.1.a"; path = "../../../Applications/VTK/VTK/VTKBuild/lib/libvtkViewsCore-6.1.a"; sourceTree = "<group>"; };
 		304BE0D91BC5B9C2008FAA72 /* libvtkViewsGeovis-6.1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libvtkViewsGeovis-6.1.a"; path = "../../../Applications/VTK/VTK/VTKBuild/lib/libvtkViewsGeovis-6.1.a"; sourceTree = "<group>"; };
 		304BE0DA1BC5B9C2008FAA72 /* libvtkViewsInfovis-6.1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libvtkViewsInfovis-6.1.a"; path = "../../../Applications/VTK/VTK/VTKBuild/lib/libvtkViewsInfovis-6.1.a"; sourceTree = "<group>"; };
+		30CCB48D1BE7A716007E1DD0 /* Calculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Calculator.h; sourceTree = "<group>"; };
+		30CCB48E1BE7A890007E1DD0 /* Calculator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Calculator.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -386,6 +389,32 @@
 		304381111BC4698B00830595 = {
 			isa = PBXGroup;
 			children = (
+				30CCB48A1BE7A67B007E1DD0 /* lib */,
+				3043811C1BC4698B00830595 /* gridReader */,
+				3043811B1BC4698B00830595 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3043811B1BC4698B00830595 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3043811A1BC4698B00830595 /* gridReader */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3043811C1BC4698B00830595 /* gridReader */ = {
+			isa = PBXGroup;
+			children = (
+				30CCB48C1BE7A6BA007E1DD0 /* Header */,
+				30CCB48B1BE7A6AE007E1DD0 /* Source */,
+			);
+			path = gridReader;
+			sourceTree = "<group>";
+		};
+		30CCB48A1BE7A67B007E1DD0 /* lib */ = {
+			isa = PBXGroup;
+			children = (
 				300ED95D1BC7B1EA004E96DF /* libz.tbd */,
 				300ED95B1BC7B17D004E96DF /* IOKit.framework */,
 				304BE06C1BC5B9C2008FAA72 /* libvtkalglib-6.1.a */,
@@ -501,25 +530,25 @@
 				304BE0DA1BC5B9C2008FAA72 /* libvtkViewsInfovis-6.1.a */,
 				304BE06A1BC5B93B008FAA72 /* Cocoa.framework */,
 				304BE0681BC5B934008FAA72 /* OpenGL.framework */,
-				3043811C1BC4698B00830595 /* gridReader */,
-				3043811B1BC4698B00830595 /* Products */,
 			);
+			name = lib;
 			sourceTree = "<group>";
 		};
-		3043811B1BC4698B00830595 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				3043811A1BC4698B00830595 /* gridReader */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		3043811C1BC4698B00830595 /* gridReader */ = {
+		30CCB48B1BE7A6AE007E1DD0 /* Source */ = {
 			isa = PBXGroup;
 			children = (
 				300ED9591BC7A619004E96DF /* main.cpp */,
+				30CCB48E1BE7A890007E1DD0 /* Calculator.cpp */,
 			);
-			path = gridReader;
+			name = Source;
+			sourceTree = "<group>";
+		};
+		30CCB48C1BE7A6BA007E1DD0 /* Header */ = {
+			isa = PBXGroup;
+			children = (
+				30CCB48D1BE7A716007E1DD0 /* Calculator.h */,
+			);
+			name = Header;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -579,6 +608,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				300ED95A1BC7A619004E96DF /* main.cpp in Sources */,
+				30CCB48F1BE7A890007E1DD0 /* Calculator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
