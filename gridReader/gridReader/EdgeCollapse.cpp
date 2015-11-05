@@ -34,8 +34,3 @@ const double EdgeCollapse::getCost() {
     return this->cost;
 }
 
-struct EdgeCollapse::CompareCost {
-    bool operator()(EdgeCollapse &col1, EdgeCollapse &col2) {
-        return col1.getCost() < col2.getCost();
-    }
-};

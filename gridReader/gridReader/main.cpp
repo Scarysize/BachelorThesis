@@ -11,6 +11,7 @@
 
 #include <list>
 #include <set>
+#include <queue>
 #include <algorithm>
 #include <stdlib.h>
 #include <vector>
@@ -73,86 +74,9 @@
 
 #include "Calculator.h"
 #include "CostCalculator.hpp"
+#include "EdgeCollapse.hpp"
 
 
-
-void printVector(double x[3]) {
-    std::vector<double> vector(x, x + sizeof(double[3]) / sizeof(double));
-    for(std::vector<double>::const_iterator i = vector.begin(); i != vector.end(); ++i) {
-        std::cout << *i << ' ';
-    }
-    std::cout << std::endl;
-}
-
-double calcCellGradient(vtkTetra *cell, vtkUnstructuredGrid *tetraGrid) {
-    double sum;
-    double gradientSum = 0;
-    vtkSmartPointer<vtkIdList> pointIds = cell->GetPointIds();
-    vtkSmartPointer<vtkDataArray> scalars_AlphaWater = tetraGrid->GetPointData()->GetArray("alpha.water");
-    
-    /*
-        Point Letter-to-Index Mapping:
-        A = 0
-        B = 1
-        C = 2
-        D = 3
-    */
-    vtkIdType pointId_A = pointIds->GetId(0);
-    vtkIdType pointId_B = pointIds->GetId(1);
-    vtkIdType pointId_C = pointIds->GetId(2);
-    vtkIdType pointId_D = pointIds->GetId(3);
-    
-    // Get Point Coordinates
-    vtkPoints *points = cell->GetPoints();
-    double A[3];
-    double B[3];
-    double C[3];
-    double D[3];
-    points->GetPoint(0, A);
-    points->GetPoint(1, B);
-    points->GetPoint(2, C);
-    points->GetPoint(4, D);
-    
-    // Get Point Scalars (and think of solution for vectors...)
-    
-    
-    // Calculate necessary vectors for gradients on each vertex
-    double BD[3];
-    double BC[3];
-    double AC[3];
-    double AD[3];
-    double AB[3];
-    Calculator::subtractVectors(B, D, BD);
-    Calculator::subtractVectors(B, C, BC);
-    Calculator::subtractVectors(A, C, AC);
-    Calculator::subtractVectors(A, D, AD);
-    Calculator::subtractVectors(A, B, AB);
-    
-    // Caluclate the gradients on each vertex (via cross product)
-    double gradA[3];
-    double gradB[3];
-    double gradC[3];
-    double gradD[3];
-    Calculator::calcCrossProduct(BD, BC, gradA);
-    Calculator::calcCrossProduct(AC, AD, gradB);
-    Calculator::calcCrossProduct(AD, AB, gradC);
-    Calculator::calcCrossProduct(AC, AB, gradD);
-    
-    /* 
-        G(v0, v1, v2, v3) = ( 1/4 * Σ[k=0...3]( LengthGradient(vk) * Scalar(vk) ) * Volume(v0, v1, v2, v3)
-    */
-    gradientSum += Calculator::calcVectorLength(gradA) * *scalars_AlphaWater->GetTuple(pointId_A);
-    gradientSum += Calculator::calcVectorLength(gradB) * *scalars_AlphaWater->GetTuple(pointId_B);
-    gradientSum += Calculator::calcVectorLength(gradC) * *scalars_AlphaWater->GetTuple(pointId_C);
-    gradientSum += Calculator::calcVectorLength(gradD) * *scalars_AlphaWater->GetTuple(pointId_D);
-    
-    // std::cout << "gradient sum: " << gradientSum << std::endl;
-    
-    sum = (gradientSum * fabs(cell->ComputeVolume(A, B, C, D)))/4;
-    std::cout << "weighted average gradient: " << (sum * 10000000000000) << std::endl;
-    
-    return sum;
-}
 
 
 
@@ -166,57 +90,8 @@ void hexahedronToTetrahedronGrid(vtkUnstructuredGrid *hexagrid, vtkUnstructuredG
     tetraGrid = grid;
 }
 
-/*
- Checks if two sets of cell neighbours have a common neighbour.
- */
-bool shareNeighbours(std::list<vtkIdType> currentCellNeighbourIds, std::list<vtkIdType> lastMergedCellIds) {
-    for(std::list<vtkIdType>::iterator currentIt = currentCellNeighbourIds.begin(); currentIt != currentCellNeighbourIds.end(); currentIt++) {
-        for (std::list<vtkIdType>::iterator lastMergedIt = lastMergedCellIds.begin(); lastMergedIt != lastMergedCellIds.end(); lastMergedIt++) {
-            if (*currentIt == *lastMergedIt) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
 
-/*
- Returns a id list of all neighbour cells of a given cell in a given grid.
- */
-void getNeighbourCellIds (vtkUnstructuredGrid *ugrid, vtkIdType cellId, std::list<vtkIdType> *neighbours){
-    
-    vtkSmartPointer<vtkIdList> cellPointIds = vtkSmartPointer<vtkIdList>::New();
-    ugrid->GetCellPoints(cellId, cellPointIds);
-    
-    for(vtkIdType i = 0; i < cellPointIds->GetNumberOfIds(); i++) {
-        //Check for every cell point: which cells (in the grid) share this point --> neighbouring cells
-        vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
-        idList->InsertNextId(cellPointIds->GetId(i));
-        idList->InsertNextId(cellPointIds->GetId(i++));
-        vtkSmartPointer<vtkIdList> neighbourCellIds = vtkSmartPointer<vtkIdList>::New();
-        ugrid->GetCellNeighbors(cellId, idList, neighbourCellIds);
-        //save the ids of the neighbour cells, ommit duplicates
-        for(vtkIdType j = 0; j < neighbourCellIds->GetNumberOfIds(); j++) {
-            bool inArray = (std::find(neighbours->begin(), neighbours->end(), neighbourCellIds->GetId(j)) != neighbours->end());
-            if(!inArray) {
-                neighbours->push_back(neighbourCellIds->GetId(j));
-            }
-        }
-    }
-    
-    
-}
 
-void printCellNeighbours (vtkIdType cellId, std::set<vtkIdType> *neighbours) {
-    std::cout << "Neighbours current cell " << cellId << std::endl;
-    for(std::set<vtkIdType>::iterator it1 = neighbours->begin(); it1 != neighbours->end(); it1++) {
-        std::cout << " " << *it1;
-    }
-    std::cout << std::endl << "- - - - - - - - - - - - - - - - - - - - - - - - -" << std::endl;
-    std::cout << std::endl;
-    std::cout << std::endl;
-    std::cout << std::endl;
-}
 
 /*
  Saves a unstructured grid to a given .vtu file (full path required).
@@ -281,9 +156,15 @@ int main(int argc, const char * argv[]) {
     reader->Update();
     
     if (reader->IsFileUnstructuredGrid()) {
+        struct CompareCost {
+            bool operator()(EdgeCollapse &col1, EdgeCollapse &col2) {
+                return col1.getCost() < col2.getCost();
+            }
+        };
         
         std::cout << "input file is unstructured grid" << std::endl;
         
+        std::priority_queue<EdgeCollapse, std::vector<EdgeCollapse>, CompareCost> prio_q;
         
         //Initialize UnstructuredGridReader
         vtkSmartPointer<vtkUnstructuredGridReader> gridReader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
@@ -317,9 +198,14 @@ int main(int argc, const char * argv[]) {
                 std::set<vtkIdType> ncells = CostCalculator::getNonVanishingTetras((int) e, c, tetraGrid);
                 double volumeCost = CostCalculator::calcVolumeCost((int) e, c, 1, &ncells, &icells , tetraGrid);
                 double scalarCost = CostCalculator::calcScalarCost(tetraGrid->GetCell(c)->GetEdge((int)e), 1, tetraGrid);
+                double collapseCost = volumeCost + scalarCost;
+                EdgeCollapse *collapse = new EdgeCollapse((int)e, c, collapseCost, &icells, &ncells);
+                prio_q.push(*collapse);
             }
             
         }
+        
+        std::cout << "size of prio_q: " << prio_q.size() << std::endl;
         
         
         //startRendering(triangleFilter->GetOutputPort());

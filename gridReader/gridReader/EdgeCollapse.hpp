@@ -19,7 +19,6 @@ class EdgeCollapse {
     
 public:
     EdgeCollapse(int edgeId, vtkIdType tetraId, double cost, std::set<vtkIdType> *icells, std::set<vtkIdType> *ncells);
-    ~EdgeCollapse();
     
 public:
     void calcCollapsePoint(vtkUnstructuredGrid *tetraGrid, double *midpoint);
