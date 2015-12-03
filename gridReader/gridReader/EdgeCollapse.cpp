@@ -31,6 +31,17 @@ void EdgeCollapse::calcCollapsePoint(vtkUnstructuredGrid *tetraGrid, double *mid
 }
 
 const double EdgeCollapse::getCost() {
-    return this->cost;
+    double cost = this->cost;
+    return cost;
+}
+
+const vtkIdType EdgeCollapse::getTetraId() {
+    vtkIdType id = this->tetraId;
+    return id;
+}
+
+const int EdgeCollapse::getEdgeId() {
+    int id = this->edgeId;
+    return id;
 }
 

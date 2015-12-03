@@ -52,6 +52,7 @@ double CostCalculator::calcVolumeCost(int edgeId, vtkIdType tetraId,double weigh
         tetra->GetPoints()->GetPoint(2, coords[2]);
         tetra->GetPoints()->GetPoint(3, coords[3]);
         volume_icells += fabs(tetra->ComputeVolume(coords[0], coords[1], coords[2], coords[3]));
+        tetra = NULL;
     }
     
     /*
@@ -83,12 +84,16 @@ double CostCalculator::calcVolumeCost(int edgeId, vtkIdType tetraId,double weigh
             }
         }
         double volume_newCell = fabs(tetra->ComputeVolume(coords[0], coords[1], coords[2], coords[3]));
+        tetra = NULL;
         
         volume_diff_ncells += volume_cell - volume_newCell;
         // std::cout << "old volume: " << volume_cell << std::endl;
         // std::cout << "new volume: " << volume_newCell << std::endl;
     }
     // w * ( Σ[T ε icells]( Vol(T) ) + Σ[T ε ncells]( Vol(T) + Vol(T_new) ) )
+    // free(midPoint);
+    // free(A);
+    // free(B);
     return weight * (volume_diff_ncells + volume_icells);
 }
 
@@ -102,6 +107,9 @@ std::set<vtkIdType> CostCalculator::getIntroducedTetras(int edgeId, vtkIdType te
     for(vtkIdType c = 0; c < tetrasWithEdge->GetNumberOfIds(); c++) {
         icells.insert(tetrasWithEdge->GetId(c));
     }
+    icells.insert(tetraId); // GetCellNeighbors will ignore the tetraId, so add it manually
+    tetrasWithEdge = NULL;
+    // std::cout << "tetra id: " << tetraId << std::endl;
     return icells;
 }
 
@@ -118,6 +126,8 @@ std::set<vtkIdType> CostCalculator::getNonVanishingTetras(int edgeId, vtkIdType 
         for(vtkIdType c = 0; c < tetrasWithPoint->GetNumberOfIds(); c++) {
             ncells.insert(tetrasWithPoint->GetId(c));
         }
+        edgePoints = NULL;
+        tetrasWithPoint = NULL;
     }
     
     return ncells;
@@ -127,11 +137,12 @@ std::set<vtkIdType> CostCalculator::getNonVanishingTetras(int edgeId, vtkIdType 
 double CostCalculator::getPointData_AlphaWater(vtkIdType *pointId, vtkUnstructuredGrid *tetraGrid) {
     vtkSmartPointer<vtkDataArray> scalars_AlphaWater = tetraGrid->GetPointData()->GetArray("alpha.water");
     double *pointData = scalars_AlphaWater->GetTuple(*pointId);
+    scalars_AlphaWater = NULL;
     return *pointData;
 }
 
-void CostCalculator::printCellNeighbours (std::list<vtkIdType> *neighbours) {
-    for(std::list<vtkIdType>::iterator it1 = neighbours->begin(); it1 != neighbours->end(); it1++) {
+void CostCalculator::printCellNeighbours (std::set<vtkIdType> *neighbours) {
+    for(std::set<vtkIdType>::iterator it1 = neighbours->begin(); it1 != neighbours->end(); it1++) {
         std::cout << " " << *it1;
     }
     std::cout << std::endl;

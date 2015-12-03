@@ -31,7 +31,7 @@ private:
     /* ...other point data retrieval methods */
     
     
-    static void printCellNeighbours (std::list<vtkIdType> *neighbours);
+    static void printCellNeighbours (std::set<vtkIdType> *neighbours);
 };
 
 #endif /* CostCalculator_hpp */

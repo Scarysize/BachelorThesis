@@ -23,6 +23,8 @@ public:
 public:
     void calcCollapsePoint(vtkUnstructuredGrid *tetraGrid, double *midpoint);
     const double getCost();
+    const vtkIdType getTetraId();
+    const int getEdgeId();
     
     struct CompareCost;
     
