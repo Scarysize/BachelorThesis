@@ -14,7 +14,7 @@
 
 #include "Calculator.h"
 
-EdgeCollapse::EdgeCollapse(int edgeId, vtkIdType tetraId, double cost, std::set<vtkIdType> *icells, std::set<vtkIdType> *ncells) {
+EdgeCollapse::EdgeCollapse(int edgeId, vtkIdType tetraId, double cost, std::set<vtkIdType> icells, std::set<vtkIdType> ncells) {
     this->edgeId = edgeId;
     this->tetraId = tetraId;
     this->cost = cost;
