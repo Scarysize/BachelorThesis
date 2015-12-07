@@ -30,7 +30,7 @@ void EdgeCollapse::calcCollapsePoint(vtkUnstructuredGrid *tetraGrid, double *mid
     Calculator::calcMidPoint(points[0], points[1], midpoint);
 }
 
-const double EdgeCollapse::getCost() {
+double EdgeCollapse::getCost() {
     double cost = this->cost;
     return cost;
 }
