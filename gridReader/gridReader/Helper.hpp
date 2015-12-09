@@ -17,4 +17,5 @@
 class Helper {
 public:
     static bool edgesAreEqual(vtkCell *edgeA, vtkCell *edgeB);
+    static std::list<vtkIdType> toStdList(vtkIdList *idList);
 };

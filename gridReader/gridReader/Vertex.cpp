@@ -15,6 +15,12 @@ Vertex::Vertex(double x, double y, double z) {
     this->z = z;
 }
 
+Vertex::Vertex(double coords[3]) {
+    this->x = coords[0];
+    this->y = coords[1];
+    this->z = coords[2];
+}
+
 bool Vertex::hasSameCoords(Vertex vertex) {
     if (vertex.x == this->x && vertex.y == this->y && vertex.z == this->z) {
         return true;

@@ -6,6 +6,7 @@
 //  Copyright © 2015 Franz Neubert. All rights reserved.
 //
 
+#include "list"
 #include "Helper.hpp"
 
 bool Helper::edgesAreEqual(vtkCell *edgeA, vtkCell *edgeB) {
@@ -21,4 +22,13 @@ bool Helper::edgesAreEqual(vtkCell *edgeA, vtkCell *edgeB) {
         }
     }
     return false;
+}
+
+std::list<vtkIdType> Helper::toStdList(vtkIdList *idList) {
+    std::list<vtkIdType> list;
+    for (vtkIdType id = 0; id < idList->GetNumberOfIds(); id++) {
+        list.push_back(idList->GetId(id));
+    }
+    
+    return list;
 }

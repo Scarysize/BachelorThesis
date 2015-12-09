@@ -14,6 +14,7 @@
 class Vertex {
 public:
     Vertex(double x, double y, double z);
+    Vertex(double coords[3]);
     
 public:
     bool hasSameCoords(Vertex vertex);
