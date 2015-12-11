@@ -18,24 +18,33 @@
 class EdgeCollapse {
     
 public:
-    EdgeCollapse(int edgeId, vtkIdType tetraId, double cost, std::set<vtkIdType> icells, std::set<vtkIdType> ncells);
+    EdgeCollapse(vtkIdType pointA, vtkIdType pointB, double cost);
     
 public:
-    void calcCollapsePoint(vtkUnstructuredGrid *tetraGrid, double *midpoint);
-    double getCost();
-    const vtkIdType getTetraId();
-    const int getEdgeId();
-    
-    struct CompareCost;
-    
     std::set<vtkIdType> ncells;
     std::set<vtkIdType> icells;
+    
+    
+
+    static void calcCollapsePoint(vtkIdType pointA, vtkIdType pointB, vtkUnstructuredGrid *tetraGrid,double *midpoint);
+    static std::set<vtkIdType> getNCells(vtkIdType pointA, vtkIdType pointB, vtkUnstructuredGrid *tetraGrid);
+    static std::set<vtkIdType> getIcells(vtkIdType pointA, vtkIdType pointB, vtkUnstructuredGrid *tetraGrid);
+    
+    // GETTER
+    vtkIdType getPointA();
+    vtkIdType getPointB();
+    
+    // SETTER
+    void setCost(double cost);
+    void setNcells(std::set<vtkIdType> ncells);
+    void setIcells(std::set<vtkIdType> icells);
+    double getCost();
+
 
 private:
-    int edgeId;
-    vtkIdType tetraId;
     double cost;
-    int edgeType;
+    vtkIdType pointA;
+    vtkIdType pointB;
 };
 
 

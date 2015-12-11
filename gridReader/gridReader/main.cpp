@@ -20,6 +20,7 @@
 #include <iostream>
 #include <vtkSmartPointer.h>
 
+#include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridReader.h>
 #include <vtkXMLUnstructuredGridWriter.h>
@@ -85,6 +86,7 @@ struct CompareCost {
         return col1.getCost() > col2.getCost();
     }
 };
+
 
 
 void hexahedronToTetrahedronGrid(vtkUnstructuredGrid *hexagrid, vtkUnstructuredGrid *tetraGrid){
@@ -225,6 +227,26 @@ void startRenderingGrid(vtkUnstructuredGrid *grid) {
     iren->Start();
 }
 
+vtkSmartPointer<vtkUnstructuredGrid> generateSimpleGrid() {
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    for (int k = 0; k < 10; k++) {
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                points->InsertNextPoint(i, j, k);
+            }
+        }
+    }
+    vtkSmartPointer<vtkStructuredGrid> grid = vtkSmartPointer<vtkStructuredGrid>::New();
+    grid->SetPoints(points);
+    grid->SetDimensions(10, 10, 10);
+    
+    vtkSmartPointer<vtkAppendFilter> appender = vtkSmartPointer<vtkAppendFilter>::New();
+    appender->SetInputData(grid);
+    appender->Update();
+    
+    return appender->GetOutput();
+}
+
 bool isInnerVertex(double solidAngle) {
     if (solidAngle >= 3.1) {
         return true;
@@ -233,7 +255,23 @@ bool isInnerVertex(double solidAngle) {
 }
 
 bool isCorner(double solidAngle) {
-    if (solidAngle <= M_PI) {
+    if (solidAngle <= M_PI/2) {
+        return true;
+    }
+    return false;
+}
+
+bool isBoundaryEdge(vtkIdType pointA, vtkIdType pointB, std::set<vtkIdType> *surfaceIds) {
+    if (surfaceIds->find(pointA) != surfaceIds->end() && surfaceIds->find(pointB) != surfaceIds->end()) {
+        // std::cout << pointA << "-->" << pointB << " is BOUNDARY" << std::endl;
+        return true;
+    }
+    return false;
+}
+
+bool isInteriorEdge(vtkIdType pointA, vtkIdType pointB, std::set<vtkIdType> *surfaceIds) {
+    if (surfaceIds->find(pointA) == surfaceIds->end() && surfaceIds->find(pointB) == surfaceIds->end()) {
+        // std::cout << pointA << "-->" << pointB << " is INTERIOR" << std::endl;
         return true;
     }
     return false;
@@ -291,13 +329,34 @@ std::set<vtkIdType> getSurfaceVertexIds(vtkUnstructuredGrid *grid) {
         std::set<vtkIdType> pointCells = getPointNeighbours(grid, seed);
         double angle = getVertexSolidAngle(grid, pointCells, seed);
         if (isCorner(angle)) {
+            // std::cout << seed << " is corner" << std::endl;
             vertexIds.insert(seed);
         } else if (!isInnerVertex(angle)) {
+            // std::cout << seed << " is boundary" << std::endl;
             vertexIds.insert(seed);
+        } else {
+            // std::cout << seed << " is inner" << std::endl;
         }
     }
     
     return vertexIds;
+}
+
+void recalcNcells(std::vector<EdgeCollapse> *prio_q, std::set<vtkIdType> *ncells,vtkUnstructuredGrid *tetraGrid) {
+    std::vector<EdgeCollapse> recalculated;
+    for (auto ncell : *ncells) {
+        for(auto collapse : *prio_q) {
+            if (collapse.ncells.find(ncell) != collapse.ncells.end()) {
+                double newCosts = CostCalculator::calcVolumeCost(collapse.getPointA(), collapse.getPointB(), 500, &collapse.ncells, &collapse.icells, tetraGrid);
+                collapse.setCost(newCosts);
+                recalculated.push_back(collapse);
+            } else {
+                recalculated.push_back(collapse);
+            }
+        }
+    }
+    std::make_heap(recalculated.begin(), recalculated.end(), CompareCost());
+    prio_q = &recalculated;
 }
 
 
@@ -306,66 +365,49 @@ std::set<vtkIdType> getSurfaceVertexIds(vtkUnstructuredGrid *grid) {
  \param tetraGrid The unstructured grid to calculate the cost and edged collapses from
  \returns The priority queue containing all possible edge collapses
  */
-std::priority_queue<EdgeCollapse, std::vector<EdgeCollapse>, CompareCost> recalculateCosts(vtkUnstructuredGrid *tetraGrid) {
-    std::priority_queue<EdgeCollapse, std::vector<EdgeCollapse>, CompareCost> prio_q;
-    // ----------------------
-    // EXTRACT FEATURE EDGES
-    // ----------------------
-    std::set<vtkIdType> surfaceIds = getSurfaceVertexIds(tetraGrid, getSurfaceVertices(tetraGrid));
+std::vector<EdgeCollapse>recalculateCosts(vtkUnstructuredGrid *tetraGrid) {
+    std::vector<EdgeCollapse> prio_q;
+    
+    // detect ids of boundary points
+    std::set<vtkIdType> surfacePoints = getSurfaceVertexIds(tetraGrid);
+    
     vtkSmartPointer<vtkEdgeTable> edges = vtkSmartPointer<vtkEdgeTable>::New();
     
     // Iterate over tetrahedras
-    for(vtkIdType c = 0; c < 5000; c++){
+    for(vtkIdType tetra = 0; tetra < tetraGrid->GetNumberOfCells(); tetra++){
         
-        if ((int)c%1000 == 0) {
-            std::cout << "c = " << c << std::endl;
+        if ((int)tetra%1000 == 0) {
+            std::cout << "c = " << tetra << std::endl;
         }
+        
         // Iterate over cell edges
-        for (vtkIdType e = 0; e < tetraGrid->GetCell(c)->GetNumberOfEdges(); e++) {
+        for (vtkIdType e = 0; e < tetraGrid->GetCell(tetra)->GetNumberOfEdges(); e++) {
             
-            vtkIdType pointA = tetraGrid->GetCell(c)->GetEdge((int) e)->GetPointId(0);
-            vtkIdType pointB = tetraGrid->GetCell(c)->GetEdge((int) e)->GetPointId(1);
+            vtkIdType pointA = tetraGrid->GetCell(tetra)->GetEdge((int) e)->GetPointId(0);
+            vtkIdType pointB = tetraGrid->GetCell(tetra)->GetEdge((int) e)->GetPointId(1);
             
             //check if edge was already traversed
             if (edges->IsEdge(pointA, pointB) == -1) {
+                // mark edge as traversed
+                edges->InsertEdge(pointA, pointB);
                 
-                std::set<vtkIdType> icells = CostCalculator::getIntroducedTetras((int) e, c, tetraGrid);
-                
-                /* START check for sharp vertices/edges */
-                bool aIsSharp = false;
-                bool bIsSharp = false;
-                bool hasIcellProblem = false;
-                
-                if (surfaceIds.find(pointA) != surfaceIds.end()) {
-                    //std::cout << "point is on surface(a): " << pointA << std::endl;
-                    aIsSharp = true;
-                }
-                if (surfaceIds.find(pointB) != surfaceIds.end()) {
-                    //std::cout << "point is on surface(b): " << pointB << std::endl;
-                    bIsSharp = true;
-                }
-                
-                for (auto icell : icells) {
-                    if (surfaceIds.find(icell) != surfaceIds.end()) {
-                        hasIcellProblem = true;
-                    }
-                }
-
-                if (((aIsSharp && bIsSharp) || (!aIsSharp && !bIsSharp)) && !hasIcellProblem) {
-                    std::set<vtkIdType> ncells = CostCalculator::getNonVanishingTetras((int) e, c, tetraGrid);
-                    double volumeCost = CostCalculator::calcVolumeCost((int) e, c, 500, &ncells, &icells , tetraGrid);
-                    double scalarCost = CostCalculator::calcScalarCost(tetraGrid->GetCell(c)->GetEdge((int)e), 1, tetraGrid);
-                    double collapseCost = volumeCost + scalarCost;
-                    EdgeCollapse collapse = *new EdgeCollapse((int)e, c, collapseCost, icells, ncells);
-                    edges->InsertEdge(pointA, pointB);
-                    prio_q.push(collapse);
+                // check if edge is boundary or interior (don´t collapse edges which have an interior and a boundary vertex)
+                if ((isBoundaryEdge(pointA, pointB, &surfacePoints) || isInteriorEdge(pointA, pointB, &surfacePoints))) {
+                    std::set<vtkIdType> icells = EdgeCollapse::getIcells(pointA, pointB, tetraGrid);
+                    std::set<vtkIdType> ncells = EdgeCollapse::getNCells(pointA, pointB, tetraGrid);
+                    double volumeCost = CostCalculator::calcVolumeCost(pointA, pointB, 500, &ncells, &icells , tetraGrid);
+                    // double scalarCost = CostCalculator::calcScalarCost(pointA, pointB, 1, tetraGrid);
+                    double collapseCost = volumeCost;
+                    EdgeCollapse collapse = *new EdgeCollapse(pointA, pointB, collapseCost);
+                    collapse.setIcells(icells);
+                    collapse.setNcells(ncells);
+                    prio_q.push_back(collapse);
                 }
             }
-            
         }
-        
     }
     
+    std::make_heap(prio_q.begin(), prio_q.end(), CompareCost());
     return prio_q;
 }
 
@@ -378,31 +420,25 @@ std::priority_queue<EdgeCollapse, std::vector<EdgeCollapse>, CompareCost> recalc
 void doCollapse(EdgeCollapse *collapse, vtkUnstructuredGrid *collapsingGrid) {
     
     /* manipulate ncells */
-    vtkIdType p1 = collapsingGrid->GetCell(collapse->getTetraId())->GetEdge(collapse->getEdgeId())->GetPointId(0);
-    vtkIdType p2 = collapsingGrid->GetCell(collapse->getTetraId())->GetEdge(collapse->getEdgeId())->GetPointId(1);
+    vtkIdType p1 = collapse->getPointA();
+    vtkIdType p2 = collapse->getPointB();
+    
+    std::cout << "collapse: " << p1 << "--" << p2 << std::endl;
     
     double midpoint[3];
-    collapse->calcCollapsePoint(collapsingGrid, midpoint);
+    EdgeCollapse::calcCollapsePoint(p1, p2, collapsingGrid, midpoint);
     collapsingGrid->GetPoints()->SetPoint(p1, midpoint);
     collapsingGrid->GetPoints()->SetPoint(p2, midpoint);
     
-    vtkSmartPointer<vtkPoints> oldPoints = collapsingGrid->GetPoints();
-    vtkSmartPointer<vtkPoints> newPoints = vtkSmartPointer<vtkPoints>::New();
-    
-    for (vtkIdType pointId = 0; pointId < oldPoints->GetNumberOfPoints(); pointId++) {
-        double point[3];
-        oldPoints->GetPoint(pointId, point);
-        newPoints->InsertNextPoint(point);
-    }
     
     /* remove icells */
     vtkSmartPointer<vtkIdTypeArray> removeCells = vtkSmartPointer<vtkIdTypeArray>::New();
     removeCells->SetNumberOfComponents(1);
-    std::set<vtkIdType> removeCellIds = collapse->icells;
+    std::set<vtkIdType> removeCellIds = EdgeCollapse::getIcells(p1, p2, collapsingGrid);
     for (auto id : removeCellIds) {
         removeCells->InsertNextValue(id);
     }
-    
+
     vtkSmartPointer<vtkSelectionNode> selectionNode = vtkSmartPointer<vtkSelectionNode>::New();
     selectionNode->SetFieldType(vtkSelectionNode::CELL);
     selectionNode->SetContentType(vtkSelectionNode::INDICES);
@@ -421,59 +457,76 @@ void doCollapse(EdgeCollapse *collapse, vtkUnstructuredGrid *collapsingGrid) {
 }
 
 int main(int argc, const char * argv[]) {
-    std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Dambreak/00_damBreak_2d/01_inter/VTK/01_inter_50.vtk";
+    
+    //std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Dambreak/00_damBreak_2d/01_inter/VTK/01_inter_50.vtk";
     // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Rinne/inter_RHG/VTK/01_inter_RHG_BHQ1_SA_mesh01_0.vtk";
-    //std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Wehr/01_inter_wehr/VTK/01_inter_wehr_LES_SpalartAllmarasDDES_12891.vtk";
-    
+    /*std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Wehr/01_inter_wehr/VTK/01_inter_wehr_LES_SpalartAllmarasDDES_12891.vtk";
+     reader->SetFileName(inputFilename.c_str());
+     reader->Update();
+    */
     vtkSmartPointer<vtkGenericDataObjectReader> reader = vtkSmartPointer<vtkGenericDataObjectReader>::New();
-    reader->SetFileName(inputFilename.c_str());
-    reader->Update();
     
-    if (reader->IsFileUnstructuredGrid()) {
-        
-        reader = NULL;
+    if (/*reader->IsFileUnstructuredGrid()*/ true) {
         
         std::cout << "input file is unstructured grid" << std::endl;
         
         //Initialize UnstructuredGridReader
-        vtkSmartPointer<vtkUnstructuredGridReader> gridReader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
-        gridReader->SetFileName(inputFilename.c_str());
-        gridReader->Update();
+//        vtkSmartPointer<vtkUnstructuredGridReader> gridReader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
+//        gridReader->SetFileName(inputFilename.c_str());
+//        gridReader->Update();
         
-        std::cout << "_original_ number of cells: " << gridReader->GetOutput()->GetNumberOfCells() << std::endl;
-        
+        vtkSmartPointer<vtkUnstructuredGrid> simpleGrid = generateSimpleGrid();
+        std::cout << "_original_ number of cells: " << simpleGrid->GetNumberOfCells() << std::endl;
         
         // -----------------
         // quad to tetra
         // -----------------
         vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter = vtkSmartPointer<vtkDataSetTriangleFilter>::New();
-        triangleFilter->SetInputConnection(gridReader->GetOutputPort());
+        //triangleFilter->SetInputConnection(gridReader->GetOutputPort());
+        triangleFilter->SetInputData(simpleGrid);
         triangleFilter->Update();
         std::cout << "_after triangulation_ number of cells: " << triangleFilter->GetOutput()->GetNumberOfCells() << std::endl;
         vtkSmartPointer<vtkUnstructuredGrid>  tetraGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
         tetraGrid = triangleFilter->GetOutput();
-        gridReader = NULL; //don´t need this anymore
+
         
-        std::priority_queue<EdgeCollapse, std::vector<EdgeCollapse>, CompareCost> prio_q = recalculateCosts(tetraGrid);
-        
-        vtkSmartPointer<vtkUnstructuredGrid> collapsingGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
-        collapsingGrid->ShallowCopy(triangleFilter->GetOutput());
-        
+        // --------------------
+        // Initiate algorithm
+        // --------------------
+        std::vector<EdgeCollapse> prio_q = recalculateCosts(tetraGrid);
         std::cout << "prio queue: " << prio_q.size() << std::endl;
         
-        for (int i = 0; i < 100; i++) {
+        // start iteration over edge collapses
+        for (int i = 0; i < 10; i++) {
+            
+            // report progress
+            if (i%100 == 0) {
+                std::cout << "collapses done: " << i << std::endl;
+            }
+            
             if (!prio_q.empty()) {
-                EdgeCollapse top = prio_q.top();
-                doCollapse(&top, collapsingGrid);
-                //prio_q = recalculateCosts(collapsingGrid);
-                prio_q.pop();
+                // get edge collapse with lowest costs
+                EdgeCollapse top = *prio_q.begin();
+                
+                // execute collapse
+                doCollapse(&top, tetraGrid);
+                // remove executed collapse (and keep heap property)
+                std::pop_heap(prio_q.begin(), prio_q.end(), CompareCost());
+                
+                // recalculate the costs for the last collapse's ncells
+                // recalcNcells(&prio_q, &top.ncells, tetraGrid);
+                
+                prio_q = recalculateCosts(tetraGrid);
             }
         }
-        std::cout << "_after first simplification_: " << collapsingGrid->GetNumberOfCells() << std::endl;
         
         
         
-        writeUgrid(collapsingGrid, "/Volumes/EXTERN/Bachelor Arbeit/test_20151207_with-ncell.vtu");
+        std::cout << "_after first simplification_: " << tetraGrid->GetNumberOfCells() << std::endl;
+        
+        
+        
+        writeUgrid(tetraGrid, "/Volumes/EXTERN/Bachelor Arbeit/test_20151211_with-ncell.vtu");
         // startRenderingGrid(collapsingGrid);
     } else if (reader->IsFileStructuredGrid()) {
         std::cout << "input file is structured grid" << std::endl;

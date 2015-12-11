@@ -19,25 +19,19 @@
 #include <vtkPointData.h>
 #include <vtkTetra.h>
 
-double CostCalculator::calcScalarCost(vtkCell *edge, double weight, vtkUnstructuredGrid *tetraGrid) {
-    if (edge->GetCellType() != VTK_LINE) {
-        std::cerr << "cell is not a line" << std::endl;
-        return 0;
-    }
-    vtkIdType pointA = edge->GetPointId(0);
-    vtkIdType pointB = edge->GetPointId(1);
+double CostCalculator::calcScalarCost(vtkIdType pointA, vtkIdType pointB, double weight, vtkUnstructuredGrid *tetraGrid) {
     return weight * fabs(getPointData_AlphaWater(&pointA, tetraGrid) - getPointData_AlphaWater(&pointB, tetraGrid));
 }
 
-double CostCalculator::calcVolumeCost(int edgeId, vtkIdType tetraId,double weight, std::set<vtkIdType> *ncells, std::set<vtkIdType> *icells, vtkUnstructuredGrid *tetraGrid) {
+double CostCalculator::calcVolumeCost(vtkIdType pointA, vtkIdType pointB, double weight, std::set<vtkIdType> *ncells, std::set<vtkIdType> *icells, vtkUnstructuredGrid *tetraGrid) {
     double A[3];
     double B[3];
     double midPoint[3];
     double volume_icells = 0;
     double volume_diff_ncells = 0;
     
-    tetraGrid->GetCell(tetraId)->GetEdge(edgeId)->GetPoints()->GetPoint(0, A);
-    tetraGrid->GetCell(tetraId)->GetEdge(edgeId)->GetPoints()->GetPoint(1, B);
+    tetraGrid->GetPoints()->GetPoint(pointA, A);
+    tetraGrid->GetPoints()->GetPoint(pointB, B);
     Calculator::calcMidPoint(A, B, midPoint);
     
     /*
@@ -71,12 +65,12 @@ double CostCalculator::calcVolumeCost(int edgeId, vtkIdType tetraId,double weigh
         vtkIdList *tetraPointIds = tetra->GetPointIds();
         bool foundRelevantPoint = false;
         for (vtkIdType c = 0; c < tetraPointIds->GetNumberOfIds() && !foundRelevantPoint; c++) {
-            if (tetraPointIds->GetId(c) == tetraGrid->GetCell(tetraId)->GetEdge(edgeId)->GetPointId(0)) {
+            if (tetraPointIds->GetId(c) == pointA) {
                 coords[(int) c][0] = midPoint[0];
                 coords[(int) c][1] = midPoint[1];
                 coords[(int) c][2] = midPoint[2];
                 foundRelevantPoint = true;
-            } else if(tetraPointIds->GetId(c) == tetraGrid->GetCell(tetraId)->GetEdge(edgeId)->GetPointId(1)) {
+            } else if(tetraPointIds->GetId(c) == pointB) {
                 coords[(int) c][0] = midPoint[0];
                 coords[(int) c][1] = midPoint[1];
                 coords[(int) c][2] = midPoint[2];
@@ -91,13 +85,10 @@ double CostCalculator::calcVolumeCost(int edgeId, vtkIdType tetraId,double weigh
         // std::cout << "new volume: " << volume_newCell << std::endl;
     }
     // w * ( Σ[T ε icells]( Vol(T) ) + Σ[T ε ncells]( Vol(T) + Vol(T_new) ) )
-    // free(midPoint);
-    // free(A);
-    // free(B);
     return weight * (volume_diff_ncells + volume_icells);
 }
 
-
+// TODO: do this with getPointCells() from Polydata
 std::set<vtkIdType> CostCalculator::getIntroducedTetras(int edgeId, vtkIdType tetraId, vtkUnstructuredGrid *tetraGrid) {
     std::set<vtkIdType> icells;
     
@@ -113,6 +104,7 @@ std::set<vtkIdType> CostCalculator::getIntroducedTetras(int edgeId, vtkIdType te
     return icells;
 }
 
+// TODO: do this with getPointCells() from Polydata
 std::set<vtkIdType> CostCalculator::getNonVanishingTetras(int edgeId, vtkIdType tetraId, vtkUnstructuredGrid *tetraGrid) {
     std::set<vtkIdType> ncells;
     
@@ -137,7 +129,6 @@ std::set<vtkIdType> CostCalculator::getNonVanishingTetras(int edgeId, vtkIdType 
 double CostCalculator::getPointData_AlphaWater(vtkIdType *pointId, vtkUnstructuredGrid *tetraGrid) {
     vtkSmartPointer<vtkDataArray> scalars_AlphaWater = tetraGrid->GetPointData()->GetArray("alpha.water");
     double *pointData = scalars_AlphaWater->GetTuple(*pointId);
-    scalars_AlphaWater = NULL;
     return *pointData;
 }
 
