@@ -386,8 +386,8 @@ std::vector<EdgeCollapse>recalculateCosts(vtkUnstructuredGrid *tetraGrid) {
                     // double scalarCost = CostCalculator::calcScalarCost(pointA, pointB, 1, tetraGrid);
                     double collapseCost = volumeCost;
                     EdgeCollapse collapse = *new EdgeCollapse(pointA, pointB, collapseCost);
-                    collapse.setIcells(icells);
-                    collapse.setNcells(ncells);
+                    //collapse.setIcells(icells);
+                    //collapse.setNcells(ncells);
                     prio_q.push_back(collapse);
                 }
             }
@@ -404,26 +404,63 @@ std::vector<EdgeCollapse>recalculateCosts(vtkUnstructuredGrid *tetraGrid) {
  \param collapsingGrid The unstructured grid the collapse should be executed on.
  \returns The unstructured grid after the collapse.
  */
-void doCollapse(EdgeCollapse *collapse, vtkUnstructuredGrid *collapsingGrid) {
+vtkSmartPointer<vtkUnstructuredGrid> doCollapse(EdgeCollapse *collapse, vtkUnstructuredGrid *collapsingGrid) {
     
-    /* manipulate ncells */
     vtkIdType p1 = collapse->getPointA();
     vtkIdType p2 = collapse->getPointB();
+    collapse->setIcells(EdgeCollapse::getIcells(p1, p2, collapsingGrid));
+    collapse->setNcells(EdgeCollapse::getNCells(p1, p2, collapsingGrid));
     
     std::cout << "collapse: " << p1 << "--" << p2 << std::endl;
     
-    double midpoint[3];
-    EdgeCollapse::calcCollapsePoint(p1, p2, collapsingGrid, midpoint);
-    collapsingGrid->GetPoints()->SetPoint(p1, midpoint);
     
+
+//  ------- NCELLS --------
+//  Changes the coords of p1 to the midpoint between p1 and p2.
+//  Replaces p2(id) with p1(id) in every ncell (which uses p2).
+
+    double midpoint[3];
+    double coordsP1[3];
+    double coordsP2[3];
+    collapsingGrid->GetPoint(p1, coordsP1);
+    collapsingGrid->GetPoint(p2, coordsP2);
+    Calculator::calcMidPoint(coordsP1, coordsP2, midpoint);
+    collapsingGrid->GetPoints()->SetPoint(p1, midpoint);
     for (auto ncell : collapse->ncells) {
         vtkIdList *ncellIds = collapsingGrid->GetCell(ncell)->GetPointIds();
-        if (ncellIds->IsId(p2)) {
+        if (ncellIds->IsId(p2) != -1) {
             ncellIds->SetId(ncellIds->IsId(p2), p1);
+            collapsingGrid->ReplaceCell(ncell, (int)ncellIds->GetNumberOfIds(), ncellIds->GetPointer(0));
         }
-        
-        //collapsingGrid->ReplaceCell(ncell, (int)ncellIds->GetNumberOfIds(), ncellIds->GetPointer(0));
     }
+//  ---- END NCELLS ----
+    
+
+//  ------ ICELLS ------
+//  Builds a vtkSelection from icell ids.
+//  Inverts Selection and extracts it, retrieving all cells except the icells.
+
+    vtkSmartPointer<vtkIdTypeArray> icellIds = vtkSmartPointer<vtkIdTypeArray>::New();
+    vtkSmartPointer<vtkSelectionNode> selectionNode = vtkSmartPointer<vtkSelectionNode>::New();
+    vtkSmartPointer<vtkSelection> selection = vtkSmartPointer<vtkSelection>::New();
+    vtkSmartPointer<vtkExtractSelection> extract = vtkSmartPointer<vtkExtractSelection>::New();
+    icellIds->SetNumberOfComponents(1);
+    for (auto icell : collapse->icells) {
+        icellIds->InsertNextValue(icell);
+        std::cout << icell << std::endl;
+    }
+    selectionNode->SetFieldType(vtkSelectionNode::CELL);
+    selectionNode->SetContentType(vtkSelectionNode::INDICES);
+    selectionNode->GetProperties()->Set(vtkSelectionNode::INVERSE(), 1);
+    selectionNode->SetSelectionList(icellIds);
+    selection->AddNode(selectionNode);
+    extract->SetInputData(0, collapsingGrid);
+    extract->SetInputData(1, selection);
+    extract->Update();
+    vtkSmartPointer<vtkUnstructuredGrid> newGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    newGrid->ShallowCopy(extract->GetOutput());
+    /* ----- END ICELLS ----- */
+    return newGrid;
 }
 
 int main(int argc, const char * argv[]) {
@@ -467,7 +504,7 @@ int main(int argc, const char * argv[]) {
         std::cout << "prio queue: " << prio_q.size() << std::endl;
         
         // start iteration over edge collapses
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 10; i++) {
             
             // report progress
             if (i%100 == 0) {
@@ -475,24 +512,21 @@ int main(int argc, const char * argv[]) {
             }
             
             if (!prio_q.empty()) {
+                
                 // get edge collapse with lowest costs
-                EdgeCollapse top = *prio_q.begin();
+                EdgeCollapse top = prio_q.front();
                 
                 // execute collapse
-                doCollapse(&top, tetraGrid);
+                tetraGrid = doCollapse(&top, tetraGrid);
+                std::cout << "_after first simplification_: " << tetraGrid->GetNumberOfCells() << std::endl;
+                
                 // remove executed collapse (and keep heap property)
-                std::pop_heap(prio_q.begin(), prio_q.end(), CompareCost());
+                // prio_q.erase(prio_q.begin());
+                // std::make_heap(prio_q.begin(), prio_q.end(), CompareCost());
 
-                prio_q = recalculateCosts(tetraGrid);
             }
         }
-        
-        
-        
-        std::cout << "_after first simplification_: " << tetraGrid->GetNumberOfCells() << std::endl;
-        
-        
-        
+      
         writeUgrid(tetraGrid, "/Volumes/EXTERN/Bachelor Arbeit/test_20151212_with-ncell.vtu");
         // startRenderingGrid(collapsingGrid);
     } else if (reader->IsFileStructuredGrid()) {

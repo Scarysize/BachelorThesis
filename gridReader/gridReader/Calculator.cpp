@@ -45,10 +45,10 @@ double Calculator::calcVectorLength(double *vector) {
     return sqrt(pow(vector[0], 2) + pow(vector[1], 2) + pow(vector[2], 2));
 }
 
-void Calculator::calcMidPoint(double *A, double *B, double *midpoint) {
-    midpoint[0] = (A[0]+B[0])/2;
-    midpoint[1] = (A[1]+B[1])/2;
-    midpoint[2] = (A[2]+B[2])/2;
+void Calculator::calcMidPoint(double A[3], double B[3], double *result) {
+    result[0] = (A[0] + B[0]) / 2;
+    result[1] = (A[1] + B[1]) / 2;
+    result[2] = (A[2] + B[2]) / 2;
 }
 
 void Calculator::calcVectorBetweenPoints(double *x, double *y, double *result) {
