@@ -6,7 +6,10 @@
 //  Copyright © 2015 Franz Neubert. All rights reserved.
 //
 
+#include <vtkSmartPointer.h>
+
 #include "list"
+#include "set"
 #include "Helper.hpp"
 
 bool Helper::edgesAreEqual(vtkCell *edgeA, vtkCell *edgeB) {
@@ -31,4 +34,13 @@ std::list<vtkIdType> Helper::toStdList(vtkIdList *idList) {
     }
     
     return list;
+}
+
+std::set<vtkIdType> Helper::toStdSet(vtkIdList *idList) {
+    std::set<vtkIdType> set;
+    for (vtkIdType id = 0; id < idList->GetNumberOfIds(); id++) {
+        set.insert(idList->GetId(id));
+    }
+    
+    return set;
 }

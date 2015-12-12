@@ -342,21 +342,8 @@ std::set<vtkIdType> getSurfaceVertexIds(vtkUnstructuredGrid *grid) {
     return vertexIds;
 }
 
-void recalcNcells(std::vector<EdgeCollapse> *prio_q, std::set<vtkIdType> *ncells,vtkUnstructuredGrid *tetraGrid) {
-    std::vector<EdgeCollapse> recalculated;
-    for (auto ncell : *ncells) {
-        for(auto collapse : *prio_q) {
-            if (collapse.ncells.find(ncell) != collapse.ncells.end()) {
-                double newCosts = CostCalculator::calcVolumeCost(collapse.getPointA(), collapse.getPointB(), 500, &collapse.ncells, &collapse.icells, tetraGrid);
-                collapse.setCost(newCosts);
-                recalculated.push_back(collapse);
-            } else {
-                recalculated.push_back(collapse);
-            }
-        }
-    }
-    std::make_heap(recalculated.begin(), recalculated.end(), CompareCost());
-    prio_q = &recalculated;
+void recalcNcells(std::vector<EdgeCollapse> *prio_q, EdgeCollapse *collapse, vtkUnstructuredGrid *tetraGrid) {
+    
 }
 
 
@@ -428,32 +415,15 @@ void doCollapse(EdgeCollapse *collapse, vtkUnstructuredGrid *collapsingGrid) {
     double midpoint[3];
     EdgeCollapse::calcCollapsePoint(p1, p2, collapsingGrid, midpoint);
     collapsingGrid->GetPoints()->SetPoint(p1, midpoint);
-    collapsingGrid->GetPoints()->SetPoint(p2, midpoint);
     
-    
-    /* remove icells */
-    vtkSmartPointer<vtkIdTypeArray> removeCells = vtkSmartPointer<vtkIdTypeArray>::New();
-    removeCells->SetNumberOfComponents(1);
-    std::set<vtkIdType> removeCellIds = EdgeCollapse::getIcells(p1, p2, collapsingGrid);
-    for (auto id : removeCellIds) {
-        removeCells->InsertNextValue(id);
+    for (auto ncell : collapse->ncells) {
+        vtkIdList *ncellIds = collapsingGrid->GetCell(ncell)->GetPointIds();
+        if (ncellIds->IsId(p2)) {
+            ncellIds->SetId(ncellIds->IsId(p2), p1);
+        }
+        
+        //collapsingGrid->ReplaceCell(ncell, (int)ncellIds->GetNumberOfIds(), ncellIds->GetPointer(0));
     }
-
-    vtkSmartPointer<vtkSelectionNode> selectionNode = vtkSmartPointer<vtkSelectionNode>::New();
-    selectionNode->SetFieldType(vtkSelectionNode::CELL);
-    selectionNode->SetContentType(vtkSelectionNode::INDICES);
-    selectionNode->GetProperties()->Set(vtkSelectionNode::INVERSE(), 1); //invert selection
-    selectionNode->SetSelectionList(removeCells);
-    
-    vtkSmartPointer<vtkSelection> selection = vtkSmartPointer<vtkSelection>::New();
-    selection->AddNode(selectionNode);
-    
-    vtkSmartPointer<vtkExtractSelection> extractSelection = vtkSmartPointer<vtkExtractSelection>::New();
-    extractSelection->SetInputData(0, collapsingGrid);
-    extractSelection->SetInputData(1, selection);
-    
-    extractSelection->Update();
-    collapsingGrid->ShallowCopy(extractSelection->GetOutput());
 }
 
 int main(int argc, const char * argv[]) {
@@ -497,7 +467,7 @@ int main(int argc, const char * argv[]) {
         std::cout << "prio queue: " << prio_q.size() << std::endl;
         
         // start iteration over edge collapses
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             
             // report progress
             if (i%100 == 0) {
@@ -512,10 +482,7 @@ int main(int argc, const char * argv[]) {
                 doCollapse(&top, tetraGrid);
                 // remove executed collapse (and keep heap property)
                 std::pop_heap(prio_q.begin(), prio_q.end(), CompareCost());
-                
-                // recalculate the costs for the last collapse's ncells
-                // recalcNcells(&prio_q, &top.ncells, tetraGrid);
-                
+
                 prio_q = recalculateCosts(tetraGrid);
             }
         }
@@ -526,7 +493,7 @@ int main(int argc, const char * argv[]) {
         
         
         
-        writeUgrid(tetraGrid, "/Volumes/EXTERN/Bachelor Arbeit/test_20151211_with-ncell.vtu");
+        writeUgrid(tetraGrid, "/Volumes/EXTERN/Bachelor Arbeit/test_20151212_with-ncell.vtu");
         // startRenderingGrid(collapsingGrid);
     } else if (reader->IsFileStructuredGrid()) {
         std::cout << "input file is structured grid" << std::endl;

@@ -18,4 +18,6 @@ class Helper {
 public:
     static bool edgesAreEqual(vtkCell *edgeA, vtkCell *edgeB);
     static std::list<vtkIdType> toStdList(vtkIdList *idList);
+    static std::set<vtkIdType> toStdSet(vtkIdList *idList);
+    static vtkIdList toVtkIdlist(std::set<vtkIdType> *idList);
 };
