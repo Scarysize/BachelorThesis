@@ -88,6 +88,16 @@ double CostCalculator::calcVolumeCost(vtkIdType pointA, vtkIdType pointB, double
     return weight * (volume_diff_ncells + volume_icells);
 }
 
+double CostCalculator::calcEdgeLengthCost(vtkIdType pointA, vtkIdType pointB, double weight, vtkUnstructuredGrid *tetraGrid) {
+    double coordsA[3];
+    double coordsB[3];
+    tetraGrid->GetPoint(pointA, coordsA);
+    tetraGrid->GetPoint(pointB, coordsB);
+    
+    // std::cout << pointA << "--" << pointB << ": " << Calculator::calcEdgeLength(coordsA, coordsB);
+    return Calculator::calcEdgeLength(coordsA, coordsB) * weight;
+}
+
 // TODO: do this with getPointCells() from Polydata
 std::set<vtkIdType> CostCalculator::getIntroducedTetras(int edgeId, vtkIdType tetraId, vtkUnstructuredGrid *tetraGrid) {
     std::set<vtkIdType> icells;

@@ -41,8 +41,11 @@ void Calculator::subtractVectors(double *x, double *y, double *result) {
 }
 
 double Calculator::calcVectorLength(double *vector) {
-    // std::cout << "vector length: " << sqrt(pow(vector[0], 2) + pow(vector[1], 2) + pow(vector[2], 2)) << std::endl;
     return sqrt(pow(vector[0], 2) + pow(vector[1], 2) + pow(vector[2], 2));
+}
+
+double Calculator::calcEdgeLength(double *pointA, double *pointB) {
+    return sqrt(pow(pointB[0] - pointA[0], 2) + pow(pointB[1] - pointA[1], 2) + pow(pointB[2] - pointA[2], 2));
 }
 
 void Calculator::calcMidPoint(double A[3], double B[3], double *result) {
@@ -58,7 +61,8 @@ void Calculator::calcVectorBetweenPoints(double *x, double *y, double *result) {
     result[2] = y[2] - x[2];
 }
 
-double Calculator::calcSolidAngle(double *a, double *b, double *c) {
+double Calculator::calcSolidAngle(double a[3], double b[3], double c[3], double seed[3]) {
+    
     double bCrossC[3];
     calcCrossProduct(b, c, bCrossC);
     double tripleScalar = calcScalarProduct(a, bCrossC);
@@ -73,7 +77,21 @@ double Calculator::calcSolidAngle(double *a, double *b, double *c) {
     double solidAngle = fabs(tripleScalar) / (prodABC + scalarAB * lengthC + scalarAC * lengthB + scalarBC * lengthA);
     
     
-    return atan(solidAngle / 2);
+    return atan(solidAngle) * 2;
+}
+
+double Calculator::calcTetraVolume(double a[3], double b[3], double c[3], double d[3]) {
+    double diffAD[3];
+    double diffBD[3];
+    double diffCD[3];
+    subtractVectors(d, a, diffAD);
+    subtractVectors(d, b, diffBD);
+    subtractVectors(d, c, diffCD);
+    
+    double crossBDCD[3];
+    calcCrossProduct(diffBD, diffCD, crossBDCD);
+    
+    return fabs(calcScalarProduct(diffAD, crossBDCD))/6;
 }
 
 
