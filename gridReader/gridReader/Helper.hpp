@@ -20,4 +20,5 @@ public:
     static std::list<vtkIdType> toStdList(vtkIdList *idList);
     static std::set<vtkIdType> toStdSet(vtkIdList *idList);
     static vtkIdList toVtkIdlist(std::set<vtkIdType> *idList);
+    static std::set<vtkIdType> cellsUsingVertex(vtkIdType vertex, vtkUnstructuredGrid *tetraGrid);
 };

@@ -7,6 +7,7 @@
 //
 
 #include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
 
 #include "list"
 #include "set"
@@ -43,4 +44,16 @@ std::set<vtkIdType> Helper::toStdSet(vtkIdList *idList) {
     }
     
     return set;
+}
+
+std::set<vtkIdType> Helper::cellsUsingVertex(vtkIdType vertex, vtkUnstructuredGrid *tetraGrid) {
+    vtkSmartPointer<vtkIdList> cellsUsingVertex = vtkSmartPointer<vtkIdList>::New();
+    vtkSmartPointer<vtkIdList> vertexIdList = vtkSmartPointer<vtkIdList>::New();
+    vertexIdList->InsertNextId(vertex);
+    
+    tetraGrid->GetCellNeighbors(-1, vertexIdList, cellsUsingVertex);
+    
+    std::set<vtkIdType> uniqueIds = Helper::toStdSet(cellsUsingVertex);
+    
+    return uniqueIds;
 }
