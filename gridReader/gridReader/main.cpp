@@ -89,6 +89,8 @@ struct CompareCost {
     }
 };
 
+std::set<vtkIdType> removedPoints;
+
 
 /*
  Saves a unstructured grid to a given .vtu file (full path required).
@@ -391,12 +393,15 @@ void iterateTetras(vtkUnstructuredGrid *tetraGrid,
                 collapsePointIds.insert(pointB);
                 
                 // check if edge is boundary or interior (don´t collapse edges which have an interior and a boundary vertex)
-                if ((isBoundaryEdge(pointA, pointB, &surfacePoints) || isInteriorEdge(pointA, pointB, &surfacePoints))) {
+                if ((/*isBoundaryEdge(pointA, pointB, &surfacePoints) ||*/
+                     isInteriorEdge(pointA, pointB, &surfacePoints)) &&
+                     removedPoints.find(pointA) == removedPoints.end() &&
+                     removedPoints.find(pointB) == removedPoints.end()) {
                     std::set<vtkIdType> icells = EdgeCollapse::getIcells(pointA, pointB, tetraGrid);
                     std::set<vtkIdType> ncells = EdgeCollapse::getNCells(pointA, pointB, tetraGrid);
                     double volumeCost = CostCalculator::calcVolumeCost(pointA, pointB, 500, &ncells, &icells , tetraGrid);
                     // double scalarCost = CostCalculator::calcScalarCost(pointA, pointB, 250, tetraGrid);
-                    double edgeLengthCost = CostCalculator::calcEdgeLengthCost(pointA, pointB, 500, tetraGrid);
+                    double edgeLengthCost = CostCalculator::calcEdgeLengthCost(pointA, pointB, 5, tetraGrid);
                     double collapseCost = volumeCost + edgeLengthCost;
                     // EdgeCollapse *collapse = new EdgeCollapse(pointA, pointB, collapseCost);
                     prio_q->push_back(*new EdgeCollapse(pointA, pointB, collapseCost));
@@ -440,49 +445,43 @@ vtkSmartPointer<vtkUnstructuredGrid> doCollapse(EdgeCollapse *collapse, vtkUnstr
     std::cout << "collapse: " << p1 << "--" << p2 << std::endl;
     double midpoint[3];
     EdgeCollapse::calcCollapsePoint(p1, p2, collapsingGrid, midpoint);
-
-    vtkSmartPointer<vtkUnstructuredGrid> newGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    newGrid->Allocate(collapsingGrid->GetNumberOfCells(), 1);
-    
-    // Build a new set of Points
-    vtkSmartPointer<vtkPoints> oldPoints = collapsingGrid->GetPoints();
-    vtkSmartPointer<vtkPoints> newPoints = vtkSmartPointer<vtkPoints>::New();
-    vtkIdType newP1Id = -2;
-    for (vtkIdType oldPoint = 0; oldPoint < collapsingGrid->GetNumberOfPoints(); oldPoint++) {
-        if (oldPoint == p1) {
-            newP1Id = newPoints->InsertNextPoint(midpoint);
-        } else if (oldPoint != p2) {
-            newPoints->InsertNextPoint(oldPoints->GetPoint(oldPoint));
-        }
-    }
-    std::cout << "#oldpoints: " << oldPoints->GetNumberOfPoints() << std::endl;
-    std::cout << "#newpoints: " << newPoints->GetNumberOfPoints() << std::endl;
-    newGrid->SetPoints(newPoints);
-    
-    // Build new Cells
-    for (vtkIdType oldCell = 0; oldCell < collapsingGrid->GetNumberOfCells(); oldCell++) {
-        if (collapse->icells.find(oldCell) == collapse->icells.end()) { // oldCell is not in ICELLS
-            vtkSmartPointer<vtkIdList> oldCellIds = collapsingGrid->GetCell(oldCell)->GetPointIds();
-            vtkSmartPointer<vtkTetra> newTetra = vtkSmartPointer<vtkTetra>::New();
-            for (vtkIdType oldId = 0; oldId < oldCellIds->GetNumberOfIds(); oldId++) {
-                vtkIdType oldGlobalId = oldCellIds->GetId(oldId);
-                if (oldGlobalId == p1) { // replace old p1 id with new p1 id
-                    newTetra->GetPointIds()->SetId(oldId, newP1Id);
-                } else if (oldGlobalId == p2) { // replace old p2 with new p1 id (new p1 is the midpoint)
-                    newTetra->GetPointIds()->SetId(oldId, newP1Id);
-                } else if(oldGlobalId > p2) { // new point set contains one id less (p2)
-                    newTetra->GetPointIds()->SetId(oldId, --oldGlobalId);
-                } else {
-                    newTetra->GetPointIds()->SetId(oldId, oldGlobalId);
-                }
+    collapsingGrid->GetPoints()->SetPoint(p1, midpoint);
+    removedPoints.insert(p2);
+    for (auto ncell : collapse->ncells) {
+        vtkSmartPointer<vtkTetra> newNcell = vtkSmartPointer<vtkTetra>::New();
+        vtkSmartPointer<vtkIdList> ncellPointIds = collapsingGrid->GetCell(ncell)->GetPointIds();
+        for (vtkIdType ncellPointId = 0; ncellPointId < ncellPointIds->GetNumberOfIds(); ncellPointId++) {
+            if (ncellPointIds->GetId(ncellPointId) == p2) {
+                // std::cout << "have to replace id: " << ncellPointIds->GetId(ncellPointId) << std::endl;
+                newNcell->GetPointIds()->SetId(ncellPointId, p1);
+            } else {
+                newNcell->GetPointIds()->SetId(ncellPointId, ncellPointIds->GetId(ncellPointId));
             }
-            newGrid->InsertNextCell(newTetra->GetCellType(), newTetra->GetPointIds());
         }
+        collapsingGrid->ReplaceCell(ncell, (int)newNcell->GetNumberOfPoints(), newNcell->GetPointIds()->GetPointer(0));
     }
-    newGrid->SetPoints(newPoints);
-    std::cout << "#oldcells: " << collapsingGrid->GetNumberOfCells() << std::endl;
-    std::cout << "#newcells: " << newGrid->GetNumberOfCells() << std::endl;
-    // newGrid->PrintSelf(std::cout, *vtkIndent::New());
+    collapsingGrid->BuildLinks();
+    
+    vtkSmartPointer<vtkIdTypeArray> removeCellIds = vtkSmartPointer<vtkIdTypeArray>::New();
+    removeCellIds->SetNumberOfComponents(1);
+    for (auto icell : collapse->icells ) {
+        removeCellIds->InsertNextValue(icell);
+    }
+    vtkSmartPointer<vtkSelectionNode> cellSelection = vtkSmartPointer<vtkSelectionNode>::New();
+    cellSelection->SetContentType(vtkSelectionNode::INDICES);
+    cellSelection->SetFieldType(vtkSelectionNode::CELL);
+    cellSelection->GetProperties()->Set(vtkSelectionNode::INVERSE(), 1);
+    cellSelection->SetSelectionList(removeCellIds);
+    vtkSmartPointer<vtkSelection> selection = vtkSmartPointer<vtkSelection>::New();
+    selection->AddNode(cellSelection);
+    vtkSmartPointer<vtkExtractSelection> extractor = vtkSmartPointer<vtkExtractSelection>::New();
+    extractor->SetInputData(0, collapsingGrid);
+    extractor->SetInputData(1, selection);
+    extractor->Update();
+    vtkSmartPointer<vtkUnstructuredGrid> newGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    newGrid->Allocate(collapsingGrid->GetNumberOfCells() - collapse->icells.size(), 1);
+    newGrid->DeepCopy(extractor->GetOutput());
+    
     return newGrid;
 }
 
@@ -516,8 +515,8 @@ int main(int argc, const char * argv[]) {
         // quad to tetra
         // -----------------
         vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter = vtkSmartPointer<vtkDataSetTriangleFilter>::New();
-        triangleFilter->SetInputConnection(gridReader->GetOutputPort());
-        //triangleFilter->SetInputData(simpleGrid);
+        // triangleFilter->SetInputConnection(gridReader->GetOutputPort());
+        triangleFilter->SetInputData(simpleGrid);
         triangleFilter->Update();
         std::cout << "_after triangulation_ number of cells: " << triangleFilter->GetOutput()->GetNumberOfCells() << std::endl;
         vtkSmartPointer<vtkUnstructuredGrid>  tetraGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
@@ -530,7 +529,7 @@ int main(int argc, const char * argv[]) {
         std::vector<EdgeCollapse> prio_q = recalculateCosts(tetraGrid);
         const int initialSize = prio_q.size();
         // start iteration over edge collapses
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 400; i++) {
             
             // report progress
             if (i%100 == 0) {
