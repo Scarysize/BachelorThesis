@@ -81,7 +81,7 @@ double Calculator::calcSolidAngle(double a[3], double b[3], double c[3], double 
     return atan(solidAngle) * 2;
 }
 
-double Calculator::calcTetraVolume(double a[3], double b[3], double c[3], double d[3]) {
+double Calculator::calcTetraVolumeNoAbs(double a[3], double b[3], double c[3], double d[3]) {
     double diffAD[3];
     double diffBD[3];
     double diffCD[3];
@@ -92,8 +92,14 @@ double Calculator::calcTetraVolume(double a[3], double b[3], double c[3], double
     double crossBDCD[3];
     calcCrossProduct(diffBD, diffCD, crossBDCD);
     
-    return fabs(calcScalarProduct(diffAD, crossBDCD))/6;
+    return calcScalarProduct(diffAD, crossBDCD)/6;
 }
+
+double Calculator::calcTetraVolume(double a[3], double b[3], double c[3], double d[3]) {
+    return fabs(calcTetraVolumeNoAbs(a, b, c, d));
+}
+
+
 
 double Calculator::calcAverageEdgeLength(vtkIdType tetra, vtkUnstructuredGrid *tetraGrid) {
     double sum = 0;

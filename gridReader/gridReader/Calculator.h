@@ -24,6 +24,7 @@ public:
     static double calcSolidAngle(double a[3], double b[3], double c[3], double seed[3]);
     static void calcVectorBetweenPoints(double x[3], double y[3], double result[3]);
     static double calcTetraVolume(double a[3], double b[3],double c[3],double d[3]);
+    static double calcTetraVolumeNoAbs(double a[3], double b[3],double c[3],double d[3]);
     static double calcAverageEdgeLength(vtkIdType tetra, vtkUnstructuredGrid *tetraGrid);
 };
 

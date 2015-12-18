@@ -123,7 +123,9 @@
 		304BE1471BC5B9C3008FAA72 /* libvtkViewsCore-6.1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 304BE0D81BC5B9C2008FAA72 /* libvtkViewsCore-6.1.a */; };
 		304BE1481BC5B9C3008FAA72 /* libvtkViewsGeovis-6.1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 304BE0D91BC5B9C2008FAA72 /* libvtkViewsGeovis-6.1.a */; };
 		304BE1491BC5B9C3008FAA72 /* libvtkViewsInfovis-6.1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 304BE0DA1BC5B9C2008FAA72 /* libvtkViewsInfovis-6.1.a */; };
+		304EAF4C1C2454A800CA03D1 /* Cell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 304EAF4A1C2454A800CA03D1 /* Cell.cpp */; };
 		30A9929D1BF396BB0009B444 /* Helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30A9929B1BF396BB0009B444 /* Helper.cpp */; };
+		30CB3E481C241D0B00238557 /* DynamicTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CB3E461C241D0B00238557 /* DynamicTest.cpp */; };
 		30CCB48F1BE7A890007E1DD0 /* Calculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CCB48E1BE7A890007E1DD0 /* Calculator.cpp */; };
 		30EAD7231C15DF9A005C8052 /* Vertex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30EAD7211C15DF9A005C8052 /* Vertex.cpp */; };
 		30ECE4C41BEB6A2600267D99 /* CostCalculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30ECE4C21BEB6A2600267D99 /* CostCalculator.cpp */; };
@@ -260,8 +262,12 @@
 		304BE0D81BC5B9C2008FAA72 /* libvtkViewsCore-6.1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libvtkViewsCore-6.1.a"; path = "../../../Applications/VTK/VTK/VTKBuild/lib/libvtkViewsCore-6.1.a"; sourceTree = "<group>"; };
 		304BE0D91BC5B9C2008FAA72 /* libvtkViewsGeovis-6.1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libvtkViewsGeovis-6.1.a"; path = "../../../Applications/VTK/VTK/VTKBuild/lib/libvtkViewsGeovis-6.1.a"; sourceTree = "<group>"; };
 		304BE0DA1BC5B9C2008FAA72 /* libvtkViewsInfovis-6.1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libvtkViewsInfovis-6.1.a"; path = "../../../Applications/VTK/VTK/VTKBuild/lib/libvtkViewsInfovis-6.1.a"; sourceTree = "<group>"; };
+		304EAF4A1C2454A800CA03D1 /* Cell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cell.cpp; sourceTree = "<group>"; };
+		304EAF4B1C2454A800CA03D1 /* Cell.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Cell.hpp; sourceTree = "<group>"; };
 		30A9929B1BF396BB0009B444 /* Helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Helper.cpp; sourceTree = "<group>"; };
 		30A9929C1BF396BB0009B444 /* Helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Helper.hpp; sourceTree = "<group>"; };
+		30CB3E461C241D0B00238557 /* DynamicTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DynamicTest.cpp; sourceTree = "<group>"; };
+		30CB3E471C241D0B00238557 /* DynamicTest.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DynamicTest.hpp; sourceTree = "<group>"; };
 		30CCB48D1BE7A716007E1DD0 /* Calculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Calculator.h; sourceTree = "<group>"; };
 		30CCB48E1BE7A890007E1DD0 /* Calculator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Calculator.cpp; sourceTree = "<group>"; };
 		30EAD7211C15DF9A005C8052 /* Vertex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Vertex.cpp; sourceTree = "<group>"; };
@@ -549,12 +555,14 @@
 		30CCB48B1BE7A6AE007E1DD0 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				304EAF4A1C2454A800CA03D1 /* Cell.cpp */,
 				300ED9591BC7A619004E96DF /* main.cpp */,
 				30CCB48E1BE7A890007E1DD0 /* Calculator.cpp */,
 				30ECE4C21BEB6A2600267D99 /* CostCalculator.cpp */,
 				30ECE4C51BEBEBF600267D99 /* EdgeCollapse.cpp */,
 				30A9929B1BF396BB0009B444 /* Helper.cpp */,
 				30EAD7211C15DF9A005C8052 /* Vertex.cpp */,
+				30CB3E461C241D0B00238557 /* DynamicTest.cpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -562,11 +570,13 @@
 		30CCB48C1BE7A6BA007E1DD0 /* Header */ = {
 			isa = PBXGroup;
 			children = (
+				30CB3E471C241D0B00238557 /* DynamicTest.hpp */,
 				30EAD7221C15DF9A005C8052 /* Vertex.hpp */,
 				30A9929C1BF396BB0009B444 /* Helper.hpp */,
 				30ECE4C61BEBEBF600267D99 /* EdgeCollapse.hpp */,
 				30ECE4C31BEB6A2600267D99 /* CostCalculator.hpp */,
 				30CCB48D1BE7A716007E1DD0 /* Calculator.h */,
+				304EAF4B1C2454A800CA03D1 /* Cell.hpp */,
 			);
 			name = Header;
 			sourceTree = "<group>";
@@ -628,8 +638,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				30A9929D1BF396BB0009B444 /* Helper.cpp in Sources */,
+				304EAF4C1C2454A800CA03D1 /* Cell.cpp in Sources */,
 				300ED95A1BC7A619004E96DF /* main.cpp in Sources */,
 				30ECE4C71BEBEBF600267D99 /* EdgeCollapse.cpp in Sources */,
+				30CB3E481C241D0B00238557 /* DynamicTest.cpp in Sources */,
 				30EAD7231C15DF9A005C8052 /* Vertex.cpp in Sources */,
 				30ECE4C41BEB6A2600267D99 /* CostCalculator.cpp in Sources */,
 				30CCB48F1BE7A890007E1DD0 /* Calculator.cpp in Sources */,
