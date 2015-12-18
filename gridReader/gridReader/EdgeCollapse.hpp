@@ -14,6 +14,7 @@
 
 #include <vtkIdTypeArray.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkSmartPointer.h>
 
 class EdgeCollapse {
     
@@ -29,6 +30,7 @@ public:
     static void calcCollapsePoint(vtkIdType pointA, vtkIdType pointB, vtkUnstructuredGrid *tetraGrid,double *midpoint);
     static std::set<vtkIdType> getNCells(vtkIdType pointA, vtkIdType pointB, vtkUnstructuredGrid *tetraGrid);
     static std::set<vtkIdType> getIcells(vtkIdType pointA, vtkIdType pointB, vtkUnstructuredGrid *tetraGrid);
+    static vtkSmartPointer<vtkUnstructuredGrid> simulateNcells(vtkIdType pointA, vtkIdType pointB, vtkUnstructuredGrid *tetraGrid);
     
     // GETTER
     vtkIdType getPointA();

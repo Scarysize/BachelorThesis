@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <vtkPoints.h>
+#include <vtkUnstructuredGrid.h>
 #include "Calculator.h"
 
 
@@ -92,6 +93,14 @@ double Calculator::calcTetraVolume(double a[3], double b[3], double c[3], double
     calcCrossProduct(diffBD, diffCD, crossBDCD);
     
     return fabs(calcScalarProduct(diffAD, crossBDCD))/6;
+}
+
+double Calculator::calcAverageEdgeLength(vtkIdType tetra, vtkUnstructuredGrid *tetraGrid) {
+    double sum = 0;
+    for (vtkIdType edge = 0; edge < tetraGrid->GetCell(tetra)->GetNumberOfEdges(); edge++) {
+        sum += calcEdgeLength(tetraGrid->GetCell(tetra)->GetEdge(edge)->GetPoints()->GetPoint(0), tetraGrid->GetCell(tetra)->GetEdge(edge)->GetPoints()->GetPoint(1));
+    }
+    return (sum / tetraGrid->GetCell(tetra)->GetNumberOfEdges());
 }
 
 
