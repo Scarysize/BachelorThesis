@@ -10,19 +10,33 @@
 #define Vertex_hpp
 
 #include <stdio.h>
+#include <vector>
+
+#include <vtkUnstructuredGrid.h>
 
 class Vertex {
 public:
-    Vertex(double x, double y, double z);
-    Vertex(double coords[3]);
+    Vertex(int id, double coords[3]);
+    
+    static std::vector<Vertex> verticesFromGrid(vtkUnstructuredGrid *grid);
+    
+private:
+    int id;
+    bool boundary;
+    bool interior;
+    bool corner;
+    double coords[3];
     
 public:
-    bool hasSameCoords(Vertex vertex);
-    
-public:
-    double x;
-    double y;
-    double z;
+    int getId();
+    double *getCoords();
+    void getCoords(double coords[3]);
+    bool isBoundary();
+    bool isInterior();
+    bool isCorner();
+    void setToBoundary();
+    void setToInterior();
+    void setToCorner();
 };
 
 #endif /* Vertex_hpp */

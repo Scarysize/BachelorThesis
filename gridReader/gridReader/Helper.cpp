@@ -44,3 +44,11 @@ std::set<vtkIdType> Helper::toStdSet(vtkIdList *idList) {
     
     return set;
 }
+
+void Helper::coords(std::vector<double> points, double *coords) {
+    if (points.size() == 3) {
+        coords[0] = points[0];
+        coords[1] = points[1];
+        coords[2] = points[2];
+    }
+}

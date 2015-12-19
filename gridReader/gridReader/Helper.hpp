@@ -10,6 +10,8 @@
 #define Helper_hpp
 
 #include <stdio.h>
+#include <list>
+#include <vector>
 #include <vtkCell.h>
 
 #endif /* Helper_hpp */
@@ -20,4 +22,5 @@ public:
     static std::list<vtkIdType> toStdList(vtkIdList *idList);
     static std::set<vtkIdType> toStdSet(vtkIdList *idList);
     static vtkIdList toVtkIdlist(std::set<vtkIdType> *idList);
+    static void coords(std::vector<double> points, double coords[3]);
 };

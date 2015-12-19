@@ -11,42 +11,56 @@
 
 #include <stdio.h>
 #include <set>
+#include <vector>
 
 #include <vtkIdTypeArray.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkSmartPointer.h>
+#include "Vertex.hpp"
 
 class EdgeCollapse {
     
 public:
-    EdgeCollapse(vtkIdType pointA, vtkIdType pointB, double cost);
+    EdgeCollapse(int pointA, int pointB, double cost);
+    
+    struct CompareCost {
+        bool operator()(EdgeCollapse &col1, EdgeCollapse &col2) {
+            return col1.getCost() > col2.getCost();
+        }
+    };
+    
     
 public:
-    std::set<vtkIdType> ncells;
-    std::set<vtkIdType> icells;
-    
-    
+    static bool compareVertices(EdgeCollapse &col1, EdgeCollapse &col2) {
+        if ((col1.getA() == col2.getA() &&
+             col1.getB() == col2.getB()) ||
+            (col1.getA() == col2.getB() &&
+             col1.getB() == col2.getA())) {
+                return true;
+            }
+        return false;
 
-    static void calcCollapsePoint(vtkIdType pointA, vtkIdType pointB, vtkUnstructuredGrid *tetraGrid,double *midpoint);
-    static std::set<vtkIdType> getNCells(vtkIdType pointA, vtkIdType pointB, vtkUnstructuredGrid *tetraGrid);
-    static std::set<vtkIdType> getIcells(vtkIdType pointA, vtkIdType pointB, vtkUnstructuredGrid *tetraGrid);
-    static vtkSmartPointer<vtkUnstructuredGrid> simulateNcells(vtkIdType pointA, vtkIdType pointB, vtkUnstructuredGrid *tetraGrid);
+    }
+    std::set<int> ncells;
+    std::set<int> icells;
     
     // GETTER
-    vtkIdType getPointA();
-    vtkIdType getPointB();
+    int getA();
+    int getB();
+    double getCost();
     
     // SETTER
     void setCost(double cost);
-    void setNcells(std::set<vtkIdType> ncells);
-    void setIcells(std::set<vtkIdType> icells);
-    double getCost();
+    void setNcells(std::set<int> ncells);
+    void setIcells(std::set<int> icells);
+    void setCollapsePoint(std::vector<Vertex> vertices);
 
 
 private:
     double cost;
-    vtkIdType pointA;
-    vtkIdType pointB;
+    int A;
+    int B;
+    double collapsePoint[3];
 };
 
 

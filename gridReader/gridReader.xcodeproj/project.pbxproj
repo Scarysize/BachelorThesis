@@ -10,6 +10,9 @@
 		300ED95A1BC7A619004E96DF /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 300ED9591BC7A619004E96DF /* main.cpp */; };
 		300ED95C1BC7B17D004E96DF /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 300ED95B1BC7B17D004E96DF /* IOKit.framework */; };
 		300ED95E1BC7B1EA004E96DF /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 300ED95D1BC7B1EA004E96DF /* libz.tbd */; };
+		30284E231C2585F500B94EC2 /* GridReducer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30284E211C2585F500B94EC2 /* GridReducer.cpp */; };
+		30284E261C25915E00B94EC2 /* CostCalculations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30284E241C25915E00B94EC2 /* CostCalculations.cpp */; };
+		30284E291C25BE3300B94EC2 /* Classifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30284E271C25BE3300B94EC2 /* Classifier.cpp */; };
 		304BE0691BC5B934008FAA72 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304BE0681BC5B934008FAA72 /* OpenGL.framework */; };
 		304BE06B1BC5B93B008FAA72 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304BE06A1BC5B93B008FAA72 /* Cocoa.framework */; };
 		304BE0DB1BC5B9C2008FAA72 /* libvtkalglib-6.1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 304BE06C1BC5B9C2008FAA72 /* libvtkalglib-6.1.a */; };
@@ -124,6 +127,7 @@
 		304BE1481BC5B9C3008FAA72 /* libvtkViewsGeovis-6.1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 304BE0D91BC5B9C2008FAA72 /* libvtkViewsGeovis-6.1.a */; };
 		304BE1491BC5B9C3008FAA72 /* libvtkViewsInfovis-6.1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 304BE0DA1BC5B9C2008FAA72 /* libvtkViewsInfovis-6.1.a */; };
 		304EAF4C1C2454A800CA03D1 /* Cell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 304EAF4A1C2454A800CA03D1 /* Cell.cpp */; };
+		304EAF4F1C245CA500CA03D1 /* Connectivity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 304EAF4D1C245CA500CA03D1 /* Connectivity.cpp */; };
 		30A9929D1BF396BB0009B444 /* Helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30A9929B1BF396BB0009B444 /* Helper.cpp */; };
 		30CB3E481C241D0B00238557 /* DynamicTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CB3E461C241D0B00238557 /* DynamicTest.cpp */; };
 		30CCB48F1BE7A890007E1DD0 /* Calculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CCB48E1BE7A890007E1DD0 /* Calculator.cpp */; };
@@ -148,6 +152,12 @@
 		300ED9591BC7A619004E96DF /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		300ED95B1BC7B17D004E96DF /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		300ED95D1BC7B1EA004E96DF /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		30284E211C2585F500B94EC2 /* GridReducer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GridReducer.cpp; sourceTree = "<group>"; };
+		30284E221C2585F500B94EC2 /* GridReducer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GridReducer.hpp; sourceTree = "<group>"; };
+		30284E241C25915E00B94EC2 /* CostCalculations.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CostCalculations.cpp; sourceTree = "<group>"; };
+		30284E251C25915E00B94EC2 /* CostCalculations.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CostCalculations.hpp; sourceTree = "<group>"; };
+		30284E271C25BE3300B94EC2 /* Classifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Classifier.cpp; sourceTree = "<group>"; };
+		30284E281C25BE3300B94EC2 /* Classifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Classifier.hpp; sourceTree = "<group>"; };
 		3043811A1BC4698B00830595 /* gridReader */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = gridReader; sourceTree = BUILT_PRODUCTS_DIR; };
 		304BE0681BC5B934008FAA72 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		304BE06A1BC5B93B008FAA72 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -264,6 +274,8 @@
 		304BE0DA1BC5B9C2008FAA72 /* libvtkViewsInfovis-6.1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libvtkViewsInfovis-6.1.a"; path = "../../../Applications/VTK/VTK/VTKBuild/lib/libvtkViewsInfovis-6.1.a"; sourceTree = "<group>"; };
 		304EAF4A1C2454A800CA03D1 /* Cell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Cell.cpp; sourceTree = "<group>"; };
 		304EAF4B1C2454A800CA03D1 /* Cell.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Cell.hpp; sourceTree = "<group>"; };
+		304EAF4D1C245CA500CA03D1 /* Connectivity.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Connectivity.cpp; sourceTree = "<group>"; };
+		304EAF4E1C245CA500CA03D1 /* Connectivity.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Connectivity.hpp; sourceTree = "<group>"; };
 		30A9929B1BF396BB0009B444 /* Helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Helper.cpp; sourceTree = "<group>"; };
 		30A9929C1BF396BB0009B444 /* Helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Helper.hpp; sourceTree = "<group>"; };
 		30CB3E461C241D0B00238557 /* DynamicTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DynamicTest.cpp; sourceTree = "<group>"; };
@@ -555,14 +567,18 @@
 		30CCB48B1BE7A6AE007E1DD0 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				304EAF4A1C2454A800CA03D1 /* Cell.cpp */,
-				300ED9591BC7A619004E96DF /* main.cpp */,
 				30CCB48E1BE7A890007E1DD0 /* Calculator.cpp */,
+				304EAF4A1C2454A800CA03D1 /* Cell.cpp */,
+				30284E271C25BE3300B94EC2 /* Classifier.cpp */,
+				304EAF4D1C245CA500CA03D1 /* Connectivity.cpp */,
+				30284E241C25915E00B94EC2 /* CostCalculations.cpp */,
 				30ECE4C21BEB6A2600267D99 /* CostCalculator.cpp */,
-				30ECE4C51BEBEBF600267D99 /* EdgeCollapse.cpp */,
-				30A9929B1BF396BB0009B444 /* Helper.cpp */,
-				30EAD7211C15DF9A005C8052 /* Vertex.cpp */,
 				30CB3E461C241D0B00238557 /* DynamicTest.cpp */,
+				30ECE4C51BEBEBF600267D99 /* EdgeCollapse.cpp */,
+				30284E211C2585F500B94EC2 /* GridReducer.cpp */,
+				30A9929B1BF396BB0009B444 /* Helper.cpp */,
+				300ED9591BC7A619004E96DF /* main.cpp */,
+				30EAD7211C15DF9A005C8052 /* Vertex.cpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -570,13 +586,17 @@
 		30CCB48C1BE7A6BA007E1DD0 /* Header */ = {
 			isa = PBXGroup;
 			children = (
-				30CB3E471C241D0B00238557 /* DynamicTest.hpp */,
-				30EAD7221C15DF9A005C8052 /* Vertex.hpp */,
-				30A9929C1BF396BB0009B444 /* Helper.hpp */,
-				30ECE4C61BEBEBF600267D99 /* EdgeCollapse.hpp */,
-				30ECE4C31BEB6A2600267D99 /* CostCalculator.hpp */,
 				30CCB48D1BE7A716007E1DD0 /* Calculator.h */,
 				304EAF4B1C2454A800CA03D1 /* Cell.hpp */,
+				30284E281C25BE3300B94EC2 /* Classifier.hpp */,
+				304EAF4E1C245CA500CA03D1 /* Connectivity.hpp */,
+				30284E251C25915E00B94EC2 /* CostCalculations.hpp */,
+				30ECE4C31BEB6A2600267D99 /* CostCalculator.hpp */,
+				30CB3E471C241D0B00238557 /* DynamicTest.hpp */,
+				30ECE4C61BEBEBF600267D99 /* EdgeCollapse.hpp */,
+				30284E221C2585F500B94EC2 /* GridReducer.hpp */,
+				30A9929C1BF396BB0009B444 /* Helper.hpp */,
+				30EAD7221C15DF9A005C8052 /* Vertex.hpp */,
 			);
 			name = Header;
 			sourceTree = "<group>";
@@ -639,11 +659,15 @@
 			files = (
 				30A9929D1BF396BB0009B444 /* Helper.cpp in Sources */,
 				304EAF4C1C2454A800CA03D1 /* Cell.cpp in Sources */,
+				30284E261C25915E00B94EC2 /* CostCalculations.cpp in Sources */,
 				300ED95A1BC7A619004E96DF /* main.cpp in Sources */,
 				30ECE4C71BEBEBF600267D99 /* EdgeCollapse.cpp in Sources */,
 				30CB3E481C241D0B00238557 /* DynamicTest.cpp in Sources */,
 				30EAD7231C15DF9A005C8052 /* Vertex.cpp in Sources */,
 				30ECE4C41BEB6A2600267D99 /* CostCalculator.cpp in Sources */,
+				30284E291C25BE3300B94EC2 /* Classifier.cpp in Sources */,
+				304EAF4F1C245CA500CA03D1 /* Connectivity.cpp in Sources */,
+				30284E231C2585F500B94EC2 /* GridReducer.cpp in Sources */,
 				30CCB48F1BE7A890007E1DD0 /* Calculator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

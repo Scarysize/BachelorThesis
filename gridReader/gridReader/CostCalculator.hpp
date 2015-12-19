@@ -21,7 +21,7 @@ class CostCalculator {
 public:
     static double calcScalarCost(vtkIdType pointA, vtkIdType pointB, double weight, vtkUnstructuredGrid *tetraGrid);
     static double calcVolumeCost(vtkIdType pointA, vtkIdType pointB, double weight, std::set<vtkIdType> ncells, std::set<vtkIdType> icells,vtkUnstructuredGrid *tetraGrid);
-    static double calcEdgeLengthCost(vtkIdType pointA, vtkIdType pointB, double weight, vtkUnstructuredGrid *tetraGrid);
+    static double calcEdgeLengthCost(int pointA, int pointB, double weight, double points[][3]);
     static double calcEdgeEquityCost(vtkIdType pointA, vtkIdType pointB, double weight, vtkUnstructuredGrid *tetraGrid);
     /* ...other cost calculation methods */
 
