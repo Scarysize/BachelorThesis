@@ -18,12 +18,12 @@ Vertex::Vertex(int id, double coords[3]) {
     this->corner = false;
 }
 
-std::vector<Vertex> Vertex::verticesFromGrid(vtkUnstructuredGrid *grid) {
-    std::vector<Vertex> vertices;
+std::vector<Vertex*> Vertex::verticesFromGrid(vtkUnstructuredGrid *grid) {
+    std::vector<Vertex*> vertices;
     for (vtkIdType point = 0; point < grid->GetNumberOfPoints(); point++) {
         double coords[3];
         grid->GetPoint(point, coords);
-        vertices.push_back(*new Vertex((int)point, coords));
+        vertices.push_back(new Vertex((int)point, coords));
     }
     return vertices;
 }

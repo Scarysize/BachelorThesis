@@ -33,7 +33,7 @@ public:
     }
     
     // STATICS
-    static std::vector<Cell> cellsFromGrid(vtkUnstructuredGrid *grid);
+    static std::vector<Cell*> cellsFromGrid(vtkUnstructuredGrid *grid);
 };
 
 #endif /* Cell_hpp */

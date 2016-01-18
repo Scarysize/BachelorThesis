@@ -18,20 +18,20 @@
 class GridReducer {
     
 public:
-    GridReducer(std::vector<Cell> cells, std::vector<Vertex> vertices) {
+    GridReducer(std::vector<Cell*> cells, std::vector<Vertex*> vertices) {
         this->cells = cells;
         this->vertices = vertices;
     }
     
-    void run(double (*calculateCost)(Vertex a, Vertex b, std::vector<Cell> cells, std::vector<Vertex> vertices));
+    void run(double (*calculateCost)(Vertex a, Vertex b, std::vector<Cell*> cells, std::vector<Vertex*> vertices));
     
     
 private:
-    std::vector<Cell> cells;
-    std::vector<Vertex> vertices;
+    std::vector<Cell*> cells;
+    std::vector<Vertex*> vertices;
     std::vector<EdgeCollapse> prioq;
     
-    void buildQueue(double (*calculateCost)(Vertex a, Vertex b, std::vector<Cell> cells, std::vector<Vertex> vertices));
+    void buildQueue(double (*calculateCost)(Vertex a, Vertex b, std::vector<Cell*> cells, std::vector<Vertex*> vertices));
     void doCollapse();
   
 };

@@ -9,6 +9,6 @@
 #include "CostCalculations.hpp"
 #include "Calculator.h"
 
-double CostCalculations::calcEdgeLengthCost(Vertex a, Vertex b, std::vector<Cell> cells, std::vector<Vertex> vertices) {
+double CostCalculations::calcEdgeLengthCost(Vertex a, Vertex b, std::vector<Cell*> cells, std::vector<Vertex*> vertices) {
     return Calculator::calcEdgeLength(a.getCoords(), b.getCoords());
 }

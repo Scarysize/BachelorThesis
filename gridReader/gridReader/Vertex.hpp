@@ -18,7 +18,7 @@ class Vertex {
 public:
     Vertex(int id, double coords[3]);
     
-    static std::vector<Vertex> verticesFromGrid(vtkUnstructuredGrid *grid);
+    static std::vector<Vertex*> verticesFromGrid(vtkUnstructuredGrid *grid);
     
 private:
     int id;
@@ -31,9 +31,11 @@ public:
     int getId();
     double *getCoords();
     void getCoords(double coords[3]);
+    
     bool isBoundary();
     bool isInterior();
     bool isCorner();
+    
     void setToBoundary();
     void setToInterior();
     void setToCorner();

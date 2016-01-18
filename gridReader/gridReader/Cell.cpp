@@ -24,8 +24,8 @@ Cell::Cell(int id, std::vector<int> points){
     this->edges = { edge0, edge1, edge2, edge3, edge4, edge5 };
 }
 
-std::vector<Cell> Cell::cellsFromGrid(vtkUnstructuredGrid *grid) {
-    std::vector<Cell> cells;
+std::vector<Cell*> Cell::cellsFromGrid(vtkUnstructuredGrid *grid) {
+    std::vector<Cell*> cells;
     
     for (vtkIdType cell = 0; cell < grid->GetNumberOfCells(); cell++) {
         std::set<vtkIdType> cellPointIds = Helper::toStdSet(grid->GetCell(cell)->GetPointIds());
@@ -33,7 +33,7 @@ std::vector<Cell> Cell::cellsFromGrid(vtkUnstructuredGrid *grid) {
         for (auto id : cellPointIds) {
             ids.push_back((int) id);
         }
-        cells.push_back(*new Cell((int)cell, ids));
+        cells.push_back(new Cell((int)cell, ids));
     }
     
     return cells;

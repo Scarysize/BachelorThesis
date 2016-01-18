@@ -362,7 +362,7 @@ int main(int argc, const char * argv[]) {
     
     if (reader->IsFileUnstructuredGrid()) {
         
-        std::cout << "input file is unstructured grid" << std::endl;
+        std::cout << "INFO: input file is unstructured grid" << std::endl;
         
         // initialize UnstructuredGridReader
         vtkSmartPointer<vtkUnstructuredGridReader> gridReader = vtkSmartPointer<vtkUnstructuredGridReader>::New();
@@ -380,12 +380,13 @@ int main(int argc, const char * argv[]) {
         // triangleFilter->SetInputConnection(gridReader->GetOutputPort());
         triangleFilter->SetInputData(simpleGrid);
         triangleFilter->Update();
-        std::cout << "_after triangulation_ number of cells: " << triangleFilter->GetOutput()->GetNumberOfCells() << std::endl;
+        std::cout << "INFO: cells after triangulation: " << triangleFilter->GetOutput()->GetNumberOfCells() << std::endl;
         vtkSmartPointer<vtkUnstructuredGrid>  tetraGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
         tetraGrid = triangleFilter->GetOutput();
         
-        std::vector<Cell> cells = Cell::cellsFromGrid(tetraGrid);
-        std::vector<Vertex> vertices = Vertex::verticesFromGrid(tetraGrid);
+        std::vector<Cell*> cells = Cell::cellsFromGrid(tetraGrid);
+        std::vector<Vertex*> vertices = Vertex::verticesFromGrid(tetraGrid);
+        std::cout << "DONE: data retrieval" << std::endl;
         
         GridReducer *reducer = new GridReducer(cells, vertices);
         reducer->run(&CostCalculations::calcEdgeLengthCost);
