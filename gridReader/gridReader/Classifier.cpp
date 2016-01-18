@@ -42,6 +42,20 @@ bool Classifier::isCurveCornerVertex(double angle) {
     return false;
 }
 
+bool Classifier::isBoundaryEdge(Vertex *A, Vertex *B) {
+    if (A->isBoundary() && B->isBoundary()) {
+        return true;
+    }
+    return false;
+}
+
+bool Classifier::isInnerEdge(Vertex *A, Vertex *B) {
+    if (A->isInterior() && B->isInterior()) {
+        return true;
+    }
+    return false;
+}
+
 void Classifier::classifyVertices(std::vector<Vertex*> *vertices, std::vector<Cell*> *cells) {
     for (auto vertex : *vertices) {
         double solidAngle = Classifier::calcSolidAngleSum(vertex->getId(), vertices, cells);

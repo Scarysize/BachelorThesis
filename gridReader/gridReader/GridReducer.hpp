@@ -23,16 +23,23 @@ public:
         this->vertices = vertices;
     }
     
-    void run(double (*calculateCost)(Vertex a, Vertex b, std::vector<Cell*> cells, std::vector<Vertex*> vertices));
-    
+    void run(double (*calculateCost)(Vertex *a, Vertex *b, std::vector<Cell*> cells, std::vector<Vertex*> vertices));
+    std::vector<Cell*> getCells() {
+        return this->cells;
+    };
+    std::vector<Vertex*> getVertices(){
+        return this->vertices;
+    };
     
 private:
     std::vector<Cell*> cells;
     std::vector<Vertex*> vertices;
-    std::vector<EdgeCollapse> prioq;
+    std::vector<EdgeCollapse*> prioq;
     
-    void buildQueue(double (*calculateCost)(Vertex a, Vertex b, std::vector<Cell*> cells, std::vector<Vertex*> vertices));
-    void doCollapse();
+    void buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, std::vector<Cell*> cells, std::vector<Vertex*> vertices));
+    void doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, std::vector<Cell*> cells, std::vector<Vertex*> vertices));
+    void recalcQueue(double (*calculateCost)(Vertex *a, Vertex *b, std::vector<Cell*> cells, std::vector<Vertex*> vertices),
+                     EdgeCollapse *lastCollapse);
   
 };
 

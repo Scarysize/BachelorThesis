@@ -18,8 +18,8 @@
 class Classifier {
 public:
     static void classifyVertices(std::vector<Vertex*> *vertices, std::vector<Cell*> *cells);
-    static bool isBoundaryEdge(Vertex A, Vertex B);
-    static bool isInnerEdge(Vertex A, Vertex B);
+    static bool isBoundaryEdge(Vertex *A, Vertex *B);
+    static bool isInnerEdge(Vertex *A, Vertex *B);
     
 private:
     static double calcSolidAngleSum(int seed, std::vector<Vertex*> *vertices ,std::vector<Cell*> *cells);

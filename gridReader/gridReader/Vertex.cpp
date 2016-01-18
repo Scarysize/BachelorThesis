@@ -16,6 +16,7 @@ Vertex::Vertex(int id, double coords[3]) {
     this->boundary = false;
     this->interior = false;
     this->corner = false;
+    this->modified = true;
 }
 
 std::vector<Vertex*> Vertex::verticesFromGrid(vtkUnstructuredGrid *grid) {
@@ -64,8 +65,22 @@ double *Vertex::getCoords() {
     return this->coords;
 }
 
+bool Vertex::wasModified() {
+    return this->modified;
+}
+
+void Vertex::setModified(bool mod) {
+    this->modified = mod;
+}
+
 void Vertex::getCoords(double *coords) {
     coords[0] = this->coords[0];
     coords[1] = this->coords[1];
     coords[2] = this->coords[2];
+}
+
+void Vertex::setCoords(double *coords) {
+    this->coords[0] = coords[0];
+    this->coords[1] = coords[1];
+    this->coords[2] = coords[2];
 }

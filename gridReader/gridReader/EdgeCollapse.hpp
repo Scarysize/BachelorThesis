@@ -24,8 +24,8 @@ public:
     EdgeCollapse(int pointA, int pointB, double cost);
     
     struct CompareCost {
-        bool operator()(EdgeCollapse &col1, EdgeCollapse &col2) {
-            return col1.getCost() > col2.getCost();
+        bool operator()(EdgeCollapse *col1, EdgeCollapse *col2) {
+            return col1->getCost() > col2->getCost();
         }
     };
     
@@ -54,6 +54,13 @@ public:
     void setNcells(std::set<int> ncells);
     void setIcells(std::set<int> icells);
     void setCollapsePoint(std::vector<Vertex> vertices);
+    
+    void setA(int A) {
+        this->A = A;
+    };
+    void setB(int B) {
+        this->B = B;
+    };
 
 
 private:

@@ -7,10 +7,12 @@
 //
 
 #include <vtkSmartPointer.h>
+#include <vtkTetra.h>
 
 #include "list"
 #include "set"
 #include "Helper.hpp"
+
 
 bool Helper::edgesAreEqual(vtkCell *edgeA, vtkCell *edgeB) {
     if (edgeA->GetCellType() != VTK_LINE || edgeB->GetCellType() != VTK_LINE) {
@@ -51,4 +53,32 @@ void Helper::coords(std::vector<double> points, double *coords) {
         coords[1] = points[1];
         coords[2] = points[2];
     }
+}
+
+vtkSmartPointer<vtkUnstructuredGrid> Helper::makeGrid(std::vector<Cell *> cells, std::vector<Vertex *> vertices) {
+    vtkSmartPointer<vtkUnstructuredGrid> ugrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    ugrid->Allocate(cells.size(), 1);
+    
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    points->SetNumberOfPoints(vertices.size());
+    int i = 0;
+    for (auto vertex : vertices) {
+        double coords[3];
+        vertex->getCoords(coords);
+        points->InsertPoint(i, coords[0], coords[1], coords[2]);
+        i++;
+    }
+    
+    for (auto cell : cells) {
+        if (!cell->deleted) {
+            vtkSmartPointer<vtkTetra> tetra = vtkSmartPointer<vtkTetra>::New();
+            tetra->GetPointIds()->SetId(0, cell->points[0]);
+            tetra->GetPointIds()->SetId(1, cell->points[1]);
+            tetra->GetPointIds()->SetId(2, cell->points[2]);
+            tetra->GetPointIds()->SetId(3, cell->points[3]);
+            ugrid->InsertNextCell(tetra->GetCellType(), tetra->GetPointIds());
+        }
+    }
+    ugrid->SetPoints(points);
+    return ugrid;
 }

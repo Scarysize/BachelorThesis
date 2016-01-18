@@ -9,10 +9,14 @@
 #ifndef Helper_hpp
 #define Helper_hpp
 
+#include "Cell.hpp"
 #include <stdio.h>
 #include <list>
+#include "Vertex.hpp"
 #include <vector>
 #include <vtkCell.h>
+#include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
 
 #endif /* Helper_hpp */
 
@@ -23,4 +27,5 @@ public:
     static std::set<vtkIdType> toStdSet(vtkIdList *idList);
     static vtkIdList toVtkIdlist(std::set<vtkIdType> *idList);
     static void coords(std::vector<double> points, double coords[3]);
+    static vtkSmartPointer<vtkUnstructuredGrid> makeGrid(std::vector<Cell*> cells, std::vector<Vertex*> vertices);
 };

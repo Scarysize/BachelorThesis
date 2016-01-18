@@ -28,7 +28,7 @@ public:
     Cell(int id, std::vector<int> points);
     
     // member functions
-    void deleteCell(){
+    void deleteCell() {
         this->deleted = true;
     }
     

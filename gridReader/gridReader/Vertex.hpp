@@ -25,13 +25,16 @@ private:
     bool boundary;
     bool interior;
     bool corner;
+    
+    bool modified;
     double coords[3];
     
 public:
     int getId();
     double *getCoords();
     void getCoords(double coords[3]);
-    
+    void setCoords(double coords[3]);
+
     bool isBoundary();
     bool isInterior();
     bool isCorner();
@@ -39,6 +42,9 @@ public:
     void setToBoundary();
     void setToInterior();
     void setToCorner();
+    
+    void setModified(bool mod);
+    bool wasModified();
 };
 
 #endif /* Vertex_hpp */
