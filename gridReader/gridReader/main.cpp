@@ -350,11 +350,11 @@ int main(int argc, const char * argv[]) {
     
     vtkSmartPointer<vtkGenericDataObjectReader> reader = vtkSmartPointer<vtkGenericDataObjectReader>::New();
     
-    //std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Dambreak/00_damBreak_2d/01_inter/VTK/01_inter_50.vtk";
+    std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Dambreak/00_damBreak_2d/01_inter/VTK/01_inter_50.vtk";
     // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Rinne/inter_RHG/VTK/01_inter_RHG_BHQ1_SA_mesh01_0.vtk";
     // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Wehr/01_inter_wehr/VTK/01_inter_wehr_LES_SpalartAllmarasDDES_12891.vtk";
-    std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/dambreak_merged4x.vtk";
-    //std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/dambreak4x.vtk";
+    // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/dambreak_merged4x.vtk";
+    // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/dambreak4x.vtk";
     // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/wehr_clipped.vtk";
     reader->SetFileName(inputFilename.c_str());
     reader->Update();
@@ -394,7 +394,7 @@ int main(int argc, const char * argv[]) {
         std::vector<Cell*> postColCells = reducer->getCells();
         std::vector<Vertex*> postColVertices = reducer->getVertices();
         vtkSmartPointer<vtkUnstructuredGrid> postColGrid = Helper::makeGrid(postColCells, postColVertices);
-        writeUgrid(postColGrid, "/Volumes/EXTERN/Bachelor Arbeit/test_20160118.vtu");
+        writeUgrid(postColGrid, "/Volumes/EXTERN/Bachelor Arbeit/test_20160125.vtu");
         
         std::cout << "INFO: done -----------------" << std::endl;
     } else if (reader->IsFileStructuredGrid()) {

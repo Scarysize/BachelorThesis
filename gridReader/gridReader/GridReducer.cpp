@@ -10,6 +10,7 @@
 #include "Connectivity.hpp"
 #include "GridReducer.hpp"
 #include "EdgeCollapse.hpp"
+#include "DynamicTest.hpp"
 
 
 void GridReducer::run(double (*calculateCost)(Vertex*, Vertex*, std::vector<Cell*>, std::vector<Vertex*>)) {
@@ -59,11 +60,17 @@ void GridReducer::buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, std::
 void GridReducer::recalcQueue(double (*calculateCost)(Vertex *, Vertex *, std::vector<Cell *>, std::vector<Vertex *>), EdgeCollapse *lastCollapse) {
     std::vector<EdgeCollapse*> recalced;
     for (auto collapse : this->prioq) {
-        if (collapse->getA() == lastCollapse->getA() ||
-            collapse->getB() == lastCollapse->getB() ||
-            collapse->getA() == lastCollapse->getB() ||
-            collapse->getB() == lastCollapse->getA()) {
+        // Collapse uses deleted vertex -> remove
+        if (collapse->getB() == lastCollapse->getB() ||
+            collapse->getA() == lastCollapse->getB()) {
             continue;
+        }
+        // Collapse uses modified vertex -> recalc
+        else if (collapse->getA() == lastCollapse->getA() ||
+            collapse->getB() == lastCollapse->getA()) {
+            double cost = (*calculateCost)(this->vertices[collapse->getA()], this->vertices[collapse->getB()], this->cells, this->vertices);
+            collapse->setCost(cost);
+            recalced.push_back(collapse);
         } else {
             recalced.push_back(collapse);
         }
@@ -75,22 +82,34 @@ void GridReducer::recalcQueue(double (*calculateCost)(Vertex *, Vertex *, std::v
 void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, std::vector<Cell*> cells, std::vector<Vertex*> vertices)){
     for (int x = 0; x < 1; x++) {
         for (int i = 0; !this->prioq.empty(); i++) {
+            // 1. Get top most collapse from heap
             EdgeCollapse *top = this->prioq.front();
+            
+            /*
+             TESTS/SIMLATION:
+                - check if solid angle at collapse point = solid angle vertex a/b
+            */
+            if (!DynamicTest::testSolidAngle(top, vertices, cells)) {
+                this->prioq.erase(this->prioq.begin());
+                std::cout << "INFO: REJECTED" << std::endl;
+                continue;
+            }
             std::cout << "INFO: collapsing " << top->getA() << "---" << top->getB() << std::endl;
             std::set<int> ncells = Connectivity::getNcells(top->getA(), top->getB(), &this->cells);
             std::set<int> icells = Connectivity::getIcells(top->getA(), top->getB(), &this->cells);
             
             
-            // Calc Collapse Point
+            // 2. Calculate coords of collapse point
             double collapsePoint[3];
             double coordsA[3];
             double coordsB[3];
             this->vertices[top->getA()]->getCoords(coordsA);
             this->vertices[top->getB()]->getCoords(coordsB);
             Calculator::calcMidPoint(coordsA, coordsB, collapsePoint);
+            // 3. Update coords of vertex A to collapse coords
             this->vertices[top->getA()]->setCoords(collapsePoint);
             
-            // Update NCELLS
+            // 4. Replace vertex B with vertex A in NCELLS
             for (auto ncell : ncells) {
                 Cell *cell = this->cells[ncell];
                 for (int j = 0; j < cell->points.size(); j++) {
@@ -100,12 +119,14 @@ void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, std::
                 }
             }
             
-            // REMOVE ICELLS
+            // 5. Delete all ICELLS
             for (auto icell : icells) {
                 this->cells[icell]->deleteCell();
             }
             
+            // 6. Remove the collapse from the queue
             this->prioq.erase(this->prioq.begin());
+            // 7. Recalculate the queue
             recalcQueue(calculateCost, top);
         }
         buildQueue(calculateCost);

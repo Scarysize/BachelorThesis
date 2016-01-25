@@ -20,10 +20,10 @@ public:
     static void classifyVertices(std::vector<Vertex*> *vertices, std::vector<Cell*> *cells);
     static bool isBoundaryEdge(Vertex *A, Vertex *B);
     static bool isInnerEdge(Vertex *A, Vertex *B);
-    
-private:
     static double calcSolidAngleSum(int seed, std::vector<Vertex*> *vertices ,std::vector<Cell*> *cells);
+
     
+private:    
     static bool isBoundaryVertex(double angle);
     static bool isInnerVertex(double angle);
     static bool isCornerVertex(double angle);

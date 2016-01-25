@@ -34,6 +34,11 @@ std::set<int> Connectivity::getIcells(int vertexA, int vertexB, std::vector<Cell
 std::set<int> Connectivity::getNcells(int vertexA, int vertexB, std::vector<Cell*> *cells) {
     std::vector<int> cellsUsingA = cellsUsingVertex(vertexA, cells);
     std::vector<int> cellsUsingB = cellsUsingVertex(vertexB, cells);
+    if (cellsUsingB.empty()) {
+        std::set<int> cellSet;
+        std::copy(cellsUsingA.begin(), cellsUsingA.end(), std::inserter(cellSet, cellSet.begin()));
+        return cellSet;
+    }
     std::set<int> diffAB;
     std::set<int> diffBA;
     std::set<int> unionDiffs;
