@@ -131,6 +131,8 @@
 		30A9929D1BF396BB0009B444 /* Helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30A9929B1BF396BB0009B444 /* Helper.cpp */; };
 		30CB3E481C241D0B00238557 /* DynamicTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CB3E461C241D0B00238557 /* DynamicTest.cpp */; };
 		30CCB48F1BE7A890007E1DD0 /* Calculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30CCB48E1BE7A890007E1DD0 /* Calculator.cpp */; };
+		30DA17901C649A0000A9A67E /* Tetragrid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30DA178E1C649A0000A9A67E /* Tetragrid.cpp */; };
+		30DA17941C649A3F00A9A67E /* Edge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30DA17921C649A3F00A9A67E /* Edge.cpp */; };
 		30EAD7231C15DF9A005C8052 /* Vertex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30EAD7211C15DF9A005C8052 /* Vertex.cpp */; };
 		30ECE4C41BEB6A2600267D99 /* CostCalculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30ECE4C21BEB6A2600267D99 /* CostCalculator.cpp */; };
 		30ECE4C71BEBEBF600267D99 /* EdgeCollapse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30ECE4C51BEBEBF600267D99 /* EdgeCollapse.cpp */; };
@@ -282,6 +284,10 @@
 		30CB3E471C241D0B00238557 /* DynamicTest.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DynamicTest.hpp; sourceTree = "<group>"; };
 		30CCB48D1BE7A716007E1DD0 /* Calculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Calculator.h; sourceTree = "<group>"; };
 		30CCB48E1BE7A890007E1DD0 /* Calculator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Calculator.cpp; sourceTree = "<group>"; };
+		30DA178E1C649A0000A9A67E /* Tetragrid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tetragrid.cpp; sourceTree = "<group>"; };
+		30DA178F1C649A0000A9A67E /* Tetragrid.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Tetragrid.hpp; sourceTree = "<group>"; };
+		30DA17921C649A3F00A9A67E /* Edge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Edge.cpp; sourceTree = "<group>"; };
+		30DA17931C649A3F00A9A67E /* Edge.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Edge.hpp; sourceTree = "<group>"; };
 		30EAD7211C15DF9A005C8052 /* Vertex.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Vertex.cpp; sourceTree = "<group>"; };
 		30EAD7221C15DF9A005C8052 /* Vertex.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Vertex.hpp; sourceTree = "<group>"; };
 		30ECE4C21BEB6A2600267D99 /* CostCalculator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CostCalculator.cpp; sourceTree = "<group>"; };
@@ -567,6 +573,8 @@
 		30CCB48B1BE7A6AE007E1DD0 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				30DA17921C649A3F00A9A67E /* Edge.cpp */,
+				30DA178E1C649A0000A9A67E /* Tetragrid.cpp */,
 				30CCB48E1BE7A890007E1DD0 /* Calculator.cpp */,
 				304EAF4A1C2454A800CA03D1 /* Cell.cpp */,
 				30284E271C25BE3300B94EC2 /* Classifier.cpp */,
@@ -588,6 +596,7 @@
 			children = (
 				30CCB48D1BE7A716007E1DD0 /* Calculator.h */,
 				304EAF4B1C2454A800CA03D1 /* Cell.hpp */,
+				30DA17931C649A3F00A9A67E /* Edge.hpp */,
 				30284E281C25BE3300B94EC2 /* Classifier.hpp */,
 				304EAF4E1C245CA500CA03D1 /* Connectivity.hpp */,
 				30284E251C25915E00B94EC2 /* CostCalculations.hpp */,
@@ -597,6 +606,7 @@
 				30284E221C2585F500B94EC2 /* GridReducer.hpp */,
 				30A9929C1BF396BB0009B444 /* Helper.hpp */,
 				30EAD7221C15DF9A005C8052 /* Vertex.hpp */,
+				30DA178F1C649A0000A9A67E /* Tetragrid.hpp */,
 			);
 			name = Header;
 			sourceTree = "<group>";
@@ -659,6 +669,7 @@
 			files = (
 				30A9929D1BF396BB0009B444 /* Helper.cpp in Sources */,
 				304EAF4C1C2454A800CA03D1 /* Cell.cpp in Sources */,
+				30DA17901C649A0000A9A67E /* Tetragrid.cpp in Sources */,
 				30284E261C25915E00B94EC2 /* CostCalculations.cpp in Sources */,
 				300ED95A1BC7A619004E96DF /* main.cpp in Sources */,
 				30ECE4C71BEBEBF600267D99 /* EdgeCollapse.cpp in Sources */,
@@ -668,6 +679,7 @@
 				30284E291C25BE3300B94EC2 /* Classifier.cpp in Sources */,
 				304EAF4F1C245CA500CA03D1 /* Connectivity.cpp in Sources */,
 				30284E231C2585F500B94EC2 /* GridReducer.cpp in Sources */,
+				30DA17941C649A3F00A9A67E /* Edge.cpp in Sources */,
 				30CCB48F1BE7A890007E1DD0 /* Calculator.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

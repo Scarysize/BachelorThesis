@@ -73,6 +73,7 @@
 #include "Connectivity.hpp"
 #include "GridReducer.hpp"
 #include "CostCalculations.hpp"
+#include "Tetragrid.hpp"
 
 struct CompareCell {
     bool operator()(Cell &cell1, Cell &cell2) {
@@ -228,122 +229,6 @@ vtkSmartPointer<vtkUnstructuredGrid> generateSimpleGrid() {
     return appender->GetOutput();
 }
 
-bool isInner(double solidAngle) {
-    if (solidAngle >= 12.566370614359176) {
-        return true;
-    }
-    return false;
-}
-
-bool isBoundary(double solidAngle) {
-    if (solidAngle < 4 * M_PI) {
-        return true;
-    }
-    return false;
-}
-
-bool isCorner(double solidAngle) {
-    if (solidAngle <= M_PI/2 ||  4 * M_PI - solidAngle <= M_PI/2) {
-        return true;
-    }
-    return false;
-}
-
-bool isCurveCorner(double solidAngle) {
-    if ((M_PI/2 < solidAngle && solidAngle <= (3 * M_PI) / 2) ||
-        ((M_PI/2 < 4 * M_PI - solidAngle) && (4 * M_PI - solidAngle <= (3 * M_PI) / 2))) {
-        return true;
-    }
-    return false;
-}
-
-bool isBoundaryEdge(vtkIdType pointA, vtkIdType pointB, std::set<vtkIdType> *surfaceIds) {
-    if (surfaceIds->find(pointA) != surfaceIds->end() && surfaceIds->find(pointB) != surfaceIds->end()) {
-        return true;
-    }
-    return false;
-}
-
-bool isInteriorEdge(vtkIdType pointA, vtkIdType pointB, std::set<vtkIdType> *surfaceIds) {
-    if (surfaceIds->find(pointA) == surfaceIds->end() && surfaceIds->find(pointB) == surfaceIds->end()) {
-        return true;
-    }
-    return false;
-}
-
-std::set<vtkIdType> getPointNeighbours(vtkUnstructuredGrid *grid, vtkIdType seed) {
-    vtkSmartPointer<vtkIdList> pointCells = vtkSmartPointer<vtkIdList>::New();
-    grid->GetPointCells(seed, pointCells);
-    
-    std::set<vtkIdType> pointCellIds;
-    for (vtkIdType point = 0; point < pointCells->GetNumberOfIds(); point++) {
-        pointCellIds.insert(pointCells->GetId(point));
-    }
-    pointCells = NULL;
-    return pointCellIds;
-}
-
-/*!
- Calculates the sum of the solid angles of tetrahedron incident on a vertex (seed).
- \param grid The unstructured grid containing the tetrahedrons and the seed vertex
- \param seedCells A std::set of cell ids from cells incident on the seed vertex
- \param seed The vertex id of the seed vertex
- \return the sum of solid angles of all tetrahedrons incident on the seed (in radians/steridians e.g. pi/2)
- */
-double getVertexSolidAngle(vtkUnstructuredGrid *grid, std::set<vtkIdType> seedCells, vtkIdType seed) {
-    vtkPoints *points = grid->GetPoints();
-    double solidAngleSum = 0;
-    for (auto cell : seedCells) {
-        vtkIdList* pointIds = grid->GetCell(cell)->GetPointIds();
-        std::list<vtkIdType> cellPointIds = Helper::toStdList(pointIds);
-        double pointCoords[3*3];
-        double seedCoords[3];
-        points->GetPoint(seed, seedCoords);
-        int i = 0;
-        for (auto point : cellPointIds) {
-            if (point != seed) {
-                points->GetPoint(point, &pointCoords[i]);
-                i += 3;
-            }
-        }
-        double a[3];
-        double b[3];
-        double c[3];
-        Calculator::calcVectorBetweenPoints(seedCoords, &pointCoords[0], a);
-        Calculator::calcVectorBetweenPoints(seedCoords, &pointCoords[3], b);
-        Calculator::calcVectorBetweenPoints(seedCoords, &pointCoords[6], c);
-        solidAngleSum += Calculator::calcSolidAngle(a, b, c, seedCoords);
-    }
-    return solidAngleSum;
-}
-
-/*!
- Retrieves a list of vertices which sit on the boundary of the grid (not corner, outer-edge).
- \param grid The unstructured grid to retrieve the vertices from
- \return A std::set of vtkIdTypes, representing the ids of general boundary vertices
- */
-
-
-
-void iterateTetras(vtkUnstructuredGrid *tetraGrid,
-                   std::vector<EdgeCollapse> *prio_q,
-                   std::set<vtkIdType> surfacePoints,
-                   std::set<vtkIdType> featurePoints) {
-}
-
-/*!
- Does the cost calucation step and builds up the edge collapse heap in the process
- \param tetraGrid The unstructured grid to calculate the cost and edged collapses from
- \returns The priority queue containing all possible edge collapses
- */
-
-
-/*!
- Does one edge collapse. Changes the coords of ncells accordingly and removes icells from the grid.
- \param collapse The EdgeCollapse to be executed.
- \param collapsingGrid The unstructured grid the collapse should be executed on.
- \returns The unstructured grid after the collapse.
- */
 
 
 int main(int argc, const char * argv[]) {
@@ -377,24 +262,29 @@ int main(int argc, const char * argv[]) {
         // quad to tetra
         // -----------------
         vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter = vtkSmartPointer<vtkDataSetTriangleFilter>::New();
-        triangleFilter->SetInputConnection(gridReader->GetOutputPort());
-        // triangleFilter->SetInputData(simpleGrid);
+        // triangleFilter->SetInputConnection(gridReader->GetOutputPort());
+        triangleFilter->SetInputData(simpleGrid);
         triangleFilter->Update();
         std::cout << "INFO: cells after triangulation: " << triangleFilter->GetOutput()->GetNumberOfCells() << std::endl;
         vtkSmartPointer<vtkUnstructuredGrid>  tetraGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
         tetraGrid = triangleFilter->GetOutput();
         
-        std::vector<Cell*> cells = Cell::cellsFromGrid(tetraGrid);
-        std::vector<Vertex*> vertices = Vertex::verticesFromGrid(tetraGrid);
-        std::cout << "DONE: data retrieval" << std::endl;
-        
-        GridReducer *reducer = new GridReducer(cells, vertices);
+        Tetragrid myGrid = Tetragrid::createGrid(tetraGrid);
+        myGrid.precalculations();
+        GridReducer *reducer = new GridReducer(&myGrid);
         reducer->run(&CostCalculations::calcEdgeLengthCost);
         
-        std::vector<Cell*> postColCells = reducer->getCells();
-        std::vector<Vertex*> postColVertices = reducer->getVertices();
-        vtkSmartPointer<vtkUnstructuredGrid> postColGrid = Helper::makeGrid(postColCells, postColVertices);
-        writeUgrid(postColGrid, "/Volumes/EXTERN/Bachelor Arbeit/test_20160125.vtu");
+//        std::vector<Cell*> cells = Cell::cellsFromGrid(tetraGrid);
+//        std::vector<Vertex*> vertices = Vertex::verticesFromGrid(tetraGrid);
+//        std::cout << "DONE: data retrieval" << std::endl;
+//        
+//        GridReducer *reducer = new GridReducer(cells, vertices);
+//        reducer->run(&CostCalculations::calcEdgeLengthCost);
+//        
+//        std::vector<Cell*> postColCells = reducer->getCells();
+//        std::vector<Vertex*> postColVertices = reducer->getVertices();
+//        vtkSmartPointer<vtkUnstructuredGrid> postColGrid = Helper::makeGrid(postColCells, postColVertices);
+//        writeUgrid(postColGrid, "/Volumes/EXTERN/Bachelor Arbeit/test_20160125.vtu");
         
         std::cout << "INFO: done -----------------" << std::endl;
     } else if (reader->IsFileStructuredGrid()) {

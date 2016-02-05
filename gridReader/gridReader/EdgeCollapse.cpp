@@ -18,26 +18,14 @@
 #include "Calculator.h"
 #include "Helper.hpp"
 
-EdgeCollapse::EdgeCollapse(int pointA, int pointB, double cost) {
-    this->A = pointA;
-    this->B = pointB;
+EdgeCollapse::EdgeCollapse(Vertex *a, Vertex *b, double cost) {
+    this->A = a;
+    this->B = b;
     this->cost = cost;
-}
-
-void EdgeCollapse::setCollapsePoint(std::vector<Vertex> vertices){
-    Calculator::calcMidPoint(vertices[this->A].getCoords(), vertices[this->B].getCoords(), this->collapsePoint);
 }
 
 void EdgeCollapse::setCost(double cost) {
     this->cost = cost;
-}
-
-void EdgeCollapse::setNcells(std::set<int> ncells) {
-    this->ncells = ncells;
-}
-
-void EdgeCollapse::setIcells(std::set<int> icells) {
-    this->icells = icells;
 }
 
 double EdgeCollapse::getCost() {
@@ -45,10 +33,10 @@ double EdgeCollapse::getCost() {
     return cost;
 }
 
-int EdgeCollapse::getA() {
+Vertex *EdgeCollapse::getA() {
     return this->A;
 }
 
-int EdgeCollapse::getB() {
+Vertex *EdgeCollapse::getB() {
     return this->B;
 }

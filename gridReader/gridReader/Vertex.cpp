@@ -17,6 +17,7 @@ Vertex::Vertex(int id, double coords[3]) {
     this->interior = false;
     this->corner = false;
     this->modified = true;
+    this->incidents = vector<Cell*>();
 }
 
 std::vector<Vertex*> Vertex::verticesFromGrid(vtkUnstructuredGrid *grid) {

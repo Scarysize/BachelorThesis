@@ -6,15 +6,15 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "gridReader/main.cpp"
-            timestampString = "474820107.885175"
+            timestampString = "476361710.799106"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "399"
-            endingLineNumber = "399"
+            startingLineNumber = "289"
+            endingLineNumber = "289"
             landmarkName = "main(int argc, const char * argv[])"
             landmarkType = "7">
          </BreakpointContent>
@@ -22,16 +22,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "gridReader/Classifier.cpp"
-            timestampString = "474808611.038127"
+            filePath = "gridReader/GridReducer.cpp"
+            timestampString = "476363977.633562"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "95"
-            endingLineNumber = "95"
-            landmarkName = "Classifier::calcSolidAngleSum(int seed, std::vector&lt;Vertex*&gt; *vertices, std::vector&lt;Cell*&gt; *cells)"
+            startingLineNumber = "104"
+            endingLineNumber = "104"
+            landmarkName = "GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, std::vector&lt;Cell*&gt; cells, std::vector&lt;Vertex*&gt; vertices))"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

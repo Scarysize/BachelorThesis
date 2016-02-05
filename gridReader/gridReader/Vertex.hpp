@@ -14,10 +14,12 @@
 
 #include <vtkUnstructuredGrid.h>
 
+using namespace std;
+
+class Cell;
 class Vertex {
 public:
     Vertex(int id, double coords[3]);
-    
     static std::vector<Vertex*> verticesFromGrid(vtkUnstructuredGrid *grid);
     
 private:
@@ -30,6 +32,7 @@ private:
     double coords[3];
     
 public:
+    vector<Cell*> incidents;
     int getId();
     double *getCoords();
     void getCoords(double coords[3]);
@@ -45,6 +48,8 @@ public:
     
     void setModified(bool mod);
     bool wasModified();
+    
+    
 };
 
 #endif /* Vertex_hpp */

@@ -11,6 +11,7 @@
 #include "Classifier.hpp"
 #include "Connectivity.hpp"
 #include "Calculator.h"
+#include "Tetragrid.hpp"
 #include <vector>
 #include <set>
 bool Classifier::isBoundaryVertex(double angle) {
@@ -56,9 +57,9 @@ bool Classifier::isInnerEdge(Vertex *A, Vertex *B) {
     return false;
 }
 
-void Classifier::classifyVertices(std::vector<Vertex*> *vertices, std::vector<Cell*> *cells) {
-    for (auto vertex : *vertices) {
-        double solidAngle = Classifier::calcSolidAngleSum(vertex->getId(), vertices, cells);
+void Classifier::classifyVertices(Tetragrid *grid) {
+    for (auto vertex : grid->vertices) {
+        double solidAngle = Classifier::calcSolidAngleSum(vertex, grid);
         if (isInnerVertex(solidAngle)) {
             vertex->setToInterior();
         } else if (isCurveCornerVertex(solidAngle) || isCornerVertex(solidAngle)) {
@@ -69,19 +70,18 @@ void Classifier::classifyVertices(std::vector<Vertex*> *vertices, std::vector<Ce
     }
 }
 
-double Classifier::calcSolidAngleSum(int seed, std::vector<Vertex*> *vertices, std::vector<Cell*> *cells) {
-    std::vector<int> cellsUsingVertex = Connectivity::cellsUsingVertex(seed, cells);
+double Classifier::calcSolidAngleSum(Vertex *seed, Tetragrid *grid) {
     double solidAngleSum = 0;
-    for (auto cell : cellsUsingVertex) {
+    for (auto cell : seed->incidents) {
         double pointCoords[3*3];
         double seedCoords[3];
         int i = 0;
-        for (auto point : cells->at(cell)->points) {
-            if (point != seed) {
-                vertices->at(point)->getCoords(&pointCoords[i]);
+        for (auto vertex : cell->vertices) {
+            if (vertex != seed) {
+                vertex->getCoords(&pointCoords[i]);
                 i += 3;
             } else {
-                vertices->at(point)->getCoords(seedCoords);
+                vertex->getCoords(seedCoords);
             }
         }
         double a[3];

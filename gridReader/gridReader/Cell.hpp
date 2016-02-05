@@ -12,28 +12,32 @@
 #include <stdio.h>
 #include <set>
 #include <vector>
-
 #include <vtkUnstructuredGrid.h>
 
+using namespace std;
+
+class Edge;
+class Vertex;
 class Cell {
 public:
+    // constructor
+    Cell(int id, std::vector<Vertex*> vertices, vector<Edge*> edges);
+    
     // properties
     int id;
-    std::vector<int> points;
-    std::vector<std::vector<int>> edges;
     bool deleted;
+    double volume;
     
-public:
-    // constructor
-    Cell(int id, std::vector<int> points);
+    std::vector<Vertex*> vertices;
+    std::vector<Edge*> edges;
+
+
     
     // member functions
     void deleteCell() {
         this->deleted = true;
     }
     
-    // STATICS
-    static std::vector<Cell*> cellsFromGrid(vtkUnstructuredGrid *grid);
 };
 
 #endif /* Cell_hpp */

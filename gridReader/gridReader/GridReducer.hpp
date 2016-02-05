@@ -15,25 +15,19 @@
 #include "Vertex.hpp"
 #include "EdgeCollapse.hpp"
 
+class Tetragrid;
 class GridReducer {
     
 public:
-    GridReducer(std::vector<Cell*> cells, std::vector<Vertex*> vertices) {
-        this->cells = cells;
-        this->vertices = vertices;
+    GridReducer(Tetragrid *grid) {
+        this->grid = grid;
     }
     
     void run(double (*calculateCost)(Vertex *a, Vertex *b, std::vector<Cell*> cells, std::vector<Vertex*> vertices));
-    std::vector<Cell*> getCells() {
-        return this->cells;
-    };
-    std::vector<Vertex*> getVertices(){
-        return this->vertices;
-    };
+    
     
 private:
-    std::vector<Cell*> cells;
-    std::vector<Vertex*> vertices;
+    Tetragrid *grid;
     std::vector<EdgeCollapse*> prioq;
     
     void buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, std::vector<Cell*> cells, std::vector<Vertex*> vertices));

@@ -15,12 +15,13 @@
 #include "Cell.hpp"
 #include "Vertex.hpp"
 
+class Tetragrid;
 class Classifier {
 public:
-    static void classifyVertices(std::vector<Vertex*> *vertices, std::vector<Cell*> *cells);
+    static void classifyVertices(Tetragrid *grid);
     static bool isBoundaryEdge(Vertex *A, Vertex *B);
     static bool isInnerEdge(Vertex *A, Vertex *B);
-    static double calcSolidAngleSum(int seed, std::vector<Vertex*> *vertices ,std::vector<Cell*> *cells);
+    static double calcSolidAngleSum(Vertex *seed, Tetragrid *grid);
 
     
 private:    

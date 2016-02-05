@@ -7,43 +7,38 @@
 //
 
 #include "Connectivity.hpp"
-#include "Cell.hpp"
 #include <vector>
 
-std::vector<int> Connectivity::cellsUsingVertex(int vertex, std::vector<Cell*> *cells) {
-    std::vector<int> vertexCells;
-    for (auto cell : *cells) {
-        if (!cell->deleted) {
-            std::set<int> pointSet = { cell->points[0], cell->points[1], cell->points[2], cell->points[3] };
-            if (pointSet.find(vertex) != pointSet.end()) {
-                vertexCells.push_back(cell->id);
-            }
-        }
-    }
-    return vertexCells;
-}
+#include "Vertex.hpp"
+#include "Cell.hpp"
 
-std::set<int> Connectivity::getIcells(int vertexA, int vertexB, std::vector<Cell*> *cells) {
-    std::vector<int> cellsUsingA = cellsUsingVertex(vertexA, cells);
-    std::vector<int> cellsUsingB = cellsUsingVertex(vertexB, cells);
-    std::set<int> cellsUsingAB;
-    std::set_intersection(cellsUsingA.begin(), cellsUsingA.end(), cellsUsingB.begin(), cellsUsingB.end(), std::inserter(cellsUsingAB, cellsUsingAB.begin()));
+using namespace std;
+
+
+set<Cell*> Connectivity::getIcells(Vertex *a, Vertex *b) {
+    vector<Cell*> cellsUsingA = a->incidents;
+    vector<Cell*> cellsUsingB = b->incidents;
+    set<Cell*> cellsUsingAB;
+    set_intersection(cellsUsingA.begin(), cellsUsingA.end(), cellsUsingB.begin(), cellsUsingB.end(), inserter(cellsUsingAB, cellsUsingAB.begin()));
     return cellsUsingAB;
 }
 
-std::set<int> Connectivity::getNcells(int vertexA, int vertexB, std::vector<Cell*> *cells) {
-    std::vector<int> cellsUsingA = cellsUsingVertex(vertexA, cells);
-    std::vector<int> cellsUsingB = cellsUsingVertex(vertexB, cells);
+
+set<Cell*> Connectivity::getNcells(Vertex *a, Vertex *b) {
+    vector<Cell*> cellsUsingA = a->incidents;
+    vector<Cell*> cellsUsingB = b->incidents;
+    
     if (cellsUsingB.empty()) {
-        std::set<int> cellSet;
-        std::copy(cellsUsingA.begin(), cellsUsingA.end(), std::inserter(cellSet, cellSet.begin()));
+        set<Cell*> cellSet;
+        copy(cellsUsingA.begin(), cellsUsingA.end(), inserter(cellSet, cellSet.begin()));
         return cellSet;
     }
-    std::set<int> diffAB;
-    std::set<int> diffBA;
-    std::set<int> unionDiffs;
-    std::set_difference(cellsUsingA.begin(), cellsUsingA.end(), cellsUsingB.begin(), cellsUsingA.begin(), std::inserter(diffAB, diffAB.begin()));
-    std::set_difference(cellsUsingB.begin(), cellsUsingB.end(), cellsUsingA.begin(), cellsUsingA.begin(), std::inserter(diffBA, diffBA.begin()));
-    std::set_union(diffAB.begin(), diffAB.end(), diffBA.begin(), diffBA.end(), std::inserter(unionDiffs, unionDiffs.begin()));
+    
+    set<Cell*> diffAB;
+    set<Cell*> diffBA;
+    set<Cell*> unionDiffs;
+    set_difference(cellsUsingA.begin(), cellsUsingA.end(), cellsUsingB.begin(), cellsUsingA.begin(), inserter(diffAB, diffAB.begin()));
+    set_difference(cellsUsingB.begin(), cellsUsingB.end(), cellsUsingA.begin(), cellsUsingA.begin(), inserter(diffBA, diffBA.begin()));
+    set_union(diffAB.begin(), diffAB.end(), diffBA.begin(), diffBA.end(), inserter(unionDiffs, unionDiffs.begin()));
     return unionDiffs;
 }

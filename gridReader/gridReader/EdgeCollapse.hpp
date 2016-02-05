@@ -18,10 +18,11 @@
 #include <vtkSmartPointer.h>
 #include "Vertex.hpp"
 
+class Vertex;
 class EdgeCollapse {
     
 public:
-    EdgeCollapse(int pointA, int pointB, double cost);
+    EdgeCollapse(Vertex *a, Vertex *b, double cost);
     
     struct CompareCost {
         bool operator()(EdgeCollapse *col1, EdgeCollapse *col2) {
@@ -45,28 +46,20 @@ public:
     std::set<int> icells;
     
     // GETTER
-    int getA();
-    int getB();
+    Vertex *getA();
+    Vertex *getB();
     double getCost();
     
     // SETTER
     void setCost(double cost);
     void setNcells(std::set<int> ncells);
     void setIcells(std::set<int> icells);
-    void setCollapsePoint(std::vector<Vertex> vertices);
-    
-    void setA(int A) {
-        this->A = A;
-    };
-    void setB(int B) {
-        this->B = B;
-    };
 
 
 private:
     double cost;
-    int A;
-    int B;
+    Vertex *A;
+    Vertex *B;
     double collapsePoint[3];
 };
 
