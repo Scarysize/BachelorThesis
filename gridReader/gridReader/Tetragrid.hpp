@@ -22,7 +22,25 @@ public:
     vector<Edge*> edges;
     vector<Vertex*> vertices;
     
-    static Tetragrid createGrid(vtkUnstructuredGrid *grid);
+    Tetragrid(vector<Cell*> cells, vector<Edge*> edges, vector<Vertex*> vertices) {
+        this->cells = cells;
+        this->edges = edges;
+        this->vertices = vertices;
+    }
+    
+    ~Tetragrid() {
+        for (auto cell : this->cells) {
+            delete cell;
+        }
+        for (auto edge : this->edges) {
+            delete edge;
+        }
+        for (auto vertex : this-> vertices) {
+            delete vertex;
+        }
+    }
+    
+    static Tetragrid *createGrid(vtkUnstructuredGrid *grid);
     void precalculations();
     
 private:

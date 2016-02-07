@@ -21,10 +21,11 @@
 #include "Cell.hpp"
 #include "Vertex.hpp"
 
+class Tetragrid;
 class DynamicTest {
 public:
     static bool testVolume(std::set<vtkIdType> ncells, vtkUnstructuredGrid *gridPre, vtkUnstructuredGrid *gridAfter);
-    static bool testSolidAngle(EdgeCollapse *collapse, std::vector<Vertex*> vertices, std::vector<Cell*> cells);
+    static bool testSolidAngle(EdgeCollapse *collapse, Tetragrid *grid);
 };
 
 #endif /* DynamicTest_hpp */

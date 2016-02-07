@@ -73,24 +73,27 @@ void Classifier::classifyVertices(Tetragrid *grid) {
 double Classifier::calcSolidAngleSum(Vertex *seed, Tetragrid *grid) {
     double solidAngleSum = 0;
     for (auto cell : seed->incidents) {
-        double pointCoords[3*3];
-        double seedCoords[3];
-        int i = 0;
-        for (auto vertex : cell->vertices) {
-            if (vertex != seed) {
-                vertex->getCoords(&pointCoords[i]);
-                i += 3;
-            } else {
-                vertex->getCoords(seedCoords);
+        if (!cell->deleted) {
+            
+            double pointCoords[3*3];
+            double seedCoords[3];
+            int i = 0;
+            for (auto vertex : cell->vertices) {
+                if (vertex != seed) {
+                    vertex->getCoords(&pointCoords[i]);
+                    i += 3;
+                } else {
+                    vertex->getCoords(seedCoords);
+                }
             }
+            double a[3];
+            double b[3];
+            double c[3];
+            Calculator::calcVectorBetweenPoints(seedCoords, &pointCoords[0], a);
+            Calculator::calcVectorBetweenPoints(seedCoords, &pointCoords[3], b);
+            Calculator::calcVectorBetweenPoints(seedCoords, &pointCoords[6], c);
+            solidAngleSum += Calculator::calcSolidAngle(a, b, c, seedCoords);
         }
-        double a[3];
-        double b[3];
-        double c[3];
-        Calculator::calcVectorBetweenPoints(seedCoords, &pointCoords[0], a);
-        Calculator::calcVectorBetweenPoints(seedCoords, &pointCoords[3], b);
-        Calculator::calcVectorBetweenPoints(seedCoords, &pointCoords[6], c);
-        solidAngleSum += Calculator::calcSolidAngle(a, b, c, seedCoords);
     }
     return solidAngleSum;
 }

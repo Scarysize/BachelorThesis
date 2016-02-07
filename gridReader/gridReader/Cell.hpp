@@ -28,8 +28,8 @@ public:
     bool deleted;
     double volume;
     
-    std::vector<Vertex*> vertices;
-    std::vector<Edge*> edges;
+    vector<Vertex*> vertices;
+    vector<Edge*> edges;
 
 
     

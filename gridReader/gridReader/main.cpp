@@ -75,13 +75,13 @@
 #include "CostCalculations.hpp"
 #include "Tetragrid.hpp"
 
+using namespace std;
+
 struct CompareCell {
     bool operator()(Cell &cell1, Cell &cell2) {
         return cell1.id == cell2.id;
     }
 };
-
-std::set<vtkIdType> removedPointIds;
 
 /*
  Saves a unstructured grid to a given .vtu file (full path required).
@@ -235,7 +235,7 @@ int main(int argc, const char * argv[]) {
     
     vtkSmartPointer<vtkGenericDataObjectReader> reader = vtkSmartPointer<vtkGenericDataObjectReader>::New();
     
-    std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Dambreak/00_damBreak_2d/01_inter/VTK/01_inter_50.vtk";
+    string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Dambreak/00_damBreak_2d/01_inter/VTK/01_inter_50.vtk";
     // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Rinne/inter_RHG/VTK/01_inter_RHG_BHQ1_SA_mesh01_0.vtk";
     // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Wehr/01_inter_wehr/VTK/01_inter_wehr_LES_SpalartAllmarasDDES_12891.vtk";
     // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/dambreak_merged4x.vtk";
@@ -262,29 +262,24 @@ int main(int argc, const char * argv[]) {
         // quad to tetra
         // -----------------
         vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter = vtkSmartPointer<vtkDataSetTriangleFilter>::New();
-        // triangleFilter->SetInputConnection(gridReader->GetOutputPort());
-        triangleFilter->SetInputData(simpleGrid);
+        triangleFilter->SetInputConnection(gridReader->GetOutputPort());
+        // triangleFilter->SetInputData(simpleGrid);
         triangleFilter->Update();
-        std::cout << "INFO: cells after triangulation: " << triangleFilter->GetOutput()->GetNumberOfCells() << std::endl;
+        cout << "INFO: cells after triangulation: " << triangleFilter->GetOutput()->GetNumberOfCells() << endl;
         vtkSmartPointer<vtkUnstructuredGrid>  tetraGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
         tetraGrid = triangleFilter->GetOutput();
         
-        Tetragrid myGrid = Tetragrid::createGrid(tetraGrid);
-        myGrid.precalculations();
-        GridReducer *reducer = new GridReducer(&myGrid);
+        Tetragrid *myGrid = Tetragrid::createGrid(tetraGrid);
+        tetraGrid = NULL;
+        myGrid->precalculations();
+        GridReducer *reducer = new GridReducer(myGrid);
         reducer->run(&CostCalculations::calcEdgeLengthCost);
+      
+        vtkSmartPointer<vtkUnstructuredGrid> postColGrid = Helper::makeGrid(myGrid);
+        writeUgrid(postColGrid, "/Volumes/EXTERN/Bachelor Arbeit/test_20160207.vtu");
         
-//        std::vector<Cell*> cells = Cell::cellsFromGrid(tetraGrid);
-//        std::vector<Vertex*> vertices = Vertex::verticesFromGrid(tetraGrid);
-//        std::cout << "DONE: data retrieval" << std::endl;
-//        
-//        GridReducer *reducer = new GridReducer(cells, vertices);
-//        reducer->run(&CostCalculations::calcEdgeLengthCost);
-//        
-//        std::vector<Cell*> postColCells = reducer->getCells();
-//        std::vector<Vertex*> postColVertices = reducer->getVertices();
-//        vtkSmartPointer<vtkUnstructuredGrid> postColGrid = Helper::makeGrid(postColCells, postColVertices);
-//        writeUgrid(postColGrid, "/Volumes/EXTERN/Bachelor Arbeit/test_20160125.vtu");
+        free(reducer);
+        free(myGrid);
         
         std::cout << "INFO: done -----------------" << std::endl;
     } else if (reader->IsFileStructuredGrid()) {

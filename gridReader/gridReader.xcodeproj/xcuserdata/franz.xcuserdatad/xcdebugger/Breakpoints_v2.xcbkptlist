@@ -6,32 +6,32 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "gridReader/main.cpp"
-            timestampString = "476361710.799106"
+            filePath = "gridReader/DynamicTest.cpp"
+            timestampString = "476452603.868358"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "289"
-            endingLineNumber = "289"
-            landmarkName = "main(int argc, const char * argv[])"
-            landmarkType = "7">
+            startingLineNumber = "46"
+            endingLineNumber = "46"
+            landmarkName = "DynamicTest::testSolidAngle(EdgeCollapse *collapse, Tetragrid *grid)"
+            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "gridReader/GridReducer.cpp"
-            timestampString = "476363977.633562"
+            filePath = "gridReader/Connectivity.cpp"
+            timestampString = "476535330.093663"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "104"
-            endingLineNumber = "104"
-            landmarkName = "GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, std::vector&lt;Cell*&gt; cells, std::vector&lt;Vertex*&gt; vertices))"
+            startingLineNumber = "19"
+            endingLineNumber = "19"
+            landmarkName = "Connectivity::getIcells(Vertex *a, Vertex *b)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

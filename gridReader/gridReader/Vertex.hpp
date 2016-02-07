@@ -20,6 +20,11 @@ class Cell;
 class Vertex {
 public:
     Vertex(int id, double coords[3]);
+    ~Vertex() {
+        for (auto cell : this->incidents) {
+            delete cell;
+        }
+    }
     static std::vector<Vertex*> verticesFromGrid(vtkUnstructuredGrid *grid);
     
 private:

@@ -15,30 +15,49 @@
 using namespace std;
 
 
-set<Cell*> Connectivity::getIcells(Vertex *a, Vertex *b) {
-    vector<Cell*> cellsUsingA = a->incidents;
-    vector<Cell*> cellsUsingB = b->incidents;
-    set<Cell*> cellsUsingAB;
-    set_intersection(cellsUsingA.begin(), cellsUsingA.end(), cellsUsingB.begin(), cellsUsingB.end(), inserter(cellsUsingAB, cellsUsingAB.begin()));
+vector<Cell*> Connectivity::getIcells(Vertex *a, Vertex *b) {
+    vector<Cell*> cellsUsingAB;
+    for (auto cell : a->incidents) {
+        if (find(b->incidents.begin(), b->incidents.end(), cell) != b->incidents.end()) {
+            cellsUsingAB.push_back(cell);
+        }
+    }
     return cellsUsingAB;
 }
 
 
-set<Cell*> Connectivity::getNcells(Vertex *a, Vertex *b) {
-    vector<Cell*> cellsUsingA = a->incidents;
-    vector<Cell*> cellsUsingB = b->incidents;
-    
-    if (cellsUsingB.empty()) {
-        set<Cell*> cellSet;
-        copy(cellsUsingA.begin(), cellsUsingA.end(), inserter(cellSet, cellSet.begin()));
-        return cellSet;
+vector<Cell*> Connectivity::getNcells(Vertex *a, Vertex *b) {
+
+    if (b->incidents.empty()) {
+        vector<Cell*> aOnly;
+        copy(a->incidents.begin(), a->incidents.end(), back_inserter(aOnly));
+        cout << "INFO: b.incidents empty" << endl;
+        return aOnly;
+    } else if (a->incidents.empty()) {
+        vector<Cell*> bOnly;
+        copy(b->incidents.begin(), b->incidents.end(), back_inserter(bOnly));
+        cout << "INFO: a.incidents empty" << endl;
+        return bOnly;
     }
-    
-    set<Cell*> diffAB;
-    set<Cell*> diffBA;
-    set<Cell*> unionDiffs;
-    set_difference(cellsUsingA.begin(), cellsUsingA.end(), cellsUsingB.begin(), cellsUsingA.begin(), inserter(diffAB, diffAB.begin()));
-    set_difference(cellsUsingB.begin(), cellsUsingB.end(), cellsUsingA.begin(), cellsUsingA.begin(), inserter(diffBA, diffBA.begin()));
-    set_union(diffAB.begin(), diffAB.end(), diffBA.begin(), diffBA.end(), inserter(unionDiffs, unionDiffs.begin()));
-    return unionDiffs;
+//    for (auto cell : a->incidents) {
+//        cout << cell->id << endl;
+//    }
+//    cout << " -------- " << endl;
+//    for (auto cell : b->incidents) {
+//        cout << cell->id << endl;
+//    }
+    vector<Cell*> symDiff;
+    for (auto cell : a->incidents) {
+        // cell is not in b, push_back
+        if (find(b->incidents.begin(), b->incidents.end(), cell) == b->incidents.end()) {
+            symDiff.push_back(cell);
+        }
+    }
+    for (auto cell : b->incidents) {
+        // cell is not in a, push_back
+        if (find(a->incidents.begin(), a->incidents.end(), cell) == a->incidents.end()) {
+            symDiff.push_back(cell);
+        }
+    }
+    return symDiff;
 }

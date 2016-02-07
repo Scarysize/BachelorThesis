@@ -15,8 +15,7 @@
 
 using namespace std;
 
-Tetragrid Tetragrid::createGrid(vtkUnstructuredGrid *grid) {
-    Tetragrid tetragrid;
+Tetragrid *Tetragrid::createGrid(vtkUnstructuredGrid *grid) {
     vector<Cell*> cells;
     vector<Vertex*> vertices = Vertex::verticesFromGrid(grid);
     vector<Edge*> edges;
@@ -36,15 +35,24 @@ Tetragrid Tetragrid::createGrid(vtkUnstructuredGrid *grid) {
         }
         vector<Vertex*> cellVertices;
         for (vtkIdType point = 0; point < grid->GetCell(cell)->GetNumberOfPoints(); point++) {
-            cellVertices.push_back(vertices.at(grid->GetCell(cell)->GetPointId(point)));
+            cellVertices.push_back(vertices.at(grid->GetCell(cell)->GetPointId((int)point)));
         }
         cells.push_back(new Cell((int)cell, cellVertices, cellEdges));
     }
     
-    tetragrid.cells = cells;
-    tetragrid.vertices = vertices;
-    tetragrid.edges = edges;
-    
+    Tetragrid *tetragrid = new Tetragrid(cells, edges, vertices);
+//    for (auto cell : cells) {
+//        delete cell;
+//    }
+//    cells.clear();
+//    for (auto vertex : vertices) {
+//        delete vertex;
+//    }
+//    vertices.clear();
+//    for (auto edge : edges) {
+//        delete edge;
+//    }
+//    edges.clear();
     return tetragrid;
 }
 

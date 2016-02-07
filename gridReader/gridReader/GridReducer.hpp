@@ -15,6 +15,8 @@
 #include "Vertex.hpp"
 #include "EdgeCollapse.hpp"
 
+using namespace std;
+
 class Tetragrid;
 class GridReducer {
     
@@ -22,17 +24,27 @@ public:
     GridReducer(Tetragrid *grid) {
         this->grid = grid;
     }
+    ~GridReducer() {
+        for (auto el : this->prioq) {
+            delete el;
+        }
+        delete this->grid;
+    }
     
-    void run(double (*calculateCost)(Vertex *a, Vertex *b, std::vector<Cell*> cells, std::vector<Vertex*> vertices));
+    void run(double (*calculateCost)(Vertex *a, Vertex *b, vector<Cell*>*, vector<Vertex*>*));
     
+    Tetragrid *getGrid() {
+        return this->grid;
+    }
+
     
 private:
     Tetragrid *grid;
     std::vector<EdgeCollapse*> prioq;
     
-    void buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, std::vector<Cell*> cells, std::vector<Vertex*> vertices));
-    void doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, std::vector<Cell*> cells, std::vector<Vertex*> vertices));
-    void recalcQueue(double (*calculateCost)(Vertex *a, Vertex *b, std::vector<Cell*> cells, std::vector<Vertex*> vertices),
+    void buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, vector<Cell*>*, vector<Vertex*>*));
+    void doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, vector<Cell*>*, vector<Vertex*>*));
+    void recalcQueue(double (*calculateCost)(Vertex *a, Vertex *b, vector<Cell*>*, vector<Vertex*>*),
                      EdgeCollapse *lastCollapse);
   
 };

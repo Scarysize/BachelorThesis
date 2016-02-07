@@ -24,6 +24,11 @@ class EdgeCollapse {
 public:
     EdgeCollapse(Vertex *a, Vertex *b, double cost);
     
+    ~EdgeCollapse() {
+        delete this->A;
+        delete this->B;
+    }
+    
     struct CompareCost {
         bool operator()(EdgeCollapse *col1, EdgeCollapse *col2) {
             return col1->getCost() > col2->getCost();

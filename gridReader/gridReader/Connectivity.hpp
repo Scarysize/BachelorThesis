@@ -13,13 +13,15 @@
 #include <set>
 #include <vector>
 
+using namespace std;
+
 class Cell;
 class Vertex;
 class Connectivity {
 public:
-    static std::vector<int> cellsUsingVertex(int vertex, std::vector<Cell*> *cells);
-    static std::set<Cell*> getIcells(Vertex *a, Vertex *b);
-    static std::set<Cell*> getNcells(Vertex *a, Vertex *b);
+    static vector<int> cellsUsingVertex(int vertex, std::vector<Cell*> *cells);
+    static vector<Cell*> getIcells(Vertex *a, Vertex *b);
+    static vector<Cell*> getNcells(Vertex *a, Vertex *b);
 };
 
 #endif /* Connectivity_hpp */

@@ -14,10 +14,11 @@
 
 #include "Vertex.hpp"
 #include "Cell.hpp"
+using namespace std;
 
 class CostCalculations {
 public:
-    static double calcEdgeLengthCost(Vertex *a, Vertex *b, std::vector<Cell*> cells, std::vector<Vertex*> vertices);
+    static double calcEdgeLengthCost(Vertex *a, Vertex *b, vector<Cell*> *cells, vector<Vertex*> *vertices);
 };
 
 #endif /* CostCalculations_hpp */

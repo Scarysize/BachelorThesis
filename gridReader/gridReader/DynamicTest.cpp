@@ -9,6 +9,7 @@
 #include "DynamicTest.hpp"
 #include "Classifier.hpp"
 
+using namespace std;
 
 //bool DynamicTest::testVolume(std::set<vtkIdType> ncells, vtkUnstructuredGrid *gridPre, vtkUnstructuredGrid *gridAfter) {
 //    for (auto ncell : ncells) {
@@ -31,21 +32,23 @@
 //    return true;
 //}
 //
-//bool DynamicTest::testSolidAngle(EdgeCollapse *collapse, std::vector<Vertex *> vertices, std::vector<Cell *> cells) {
-//    if (vertices[collapse->getA()]->isInterior() && vertices[collapse->getB()]->isInterior()) {
-//        return true;
-//    }
-//    double angleA = Classifier::calcSolidAngleSum(collapse->getA(), &vertices, &cells);
-//    double angleB = Classifier::calcSolidAngleSum(collapse->getB(), &vertices, &cells);
-//    double collapsePoint[3];
-//    double coordsA[3];
-//    double coordsB[3];
-//    vertices[collapse->getA()]->getCoords(coordsA);
-//    vertices[collapse->getB()]->getCoords(coordsB);
-//    Calculator::calcMidPoint(coordsA, coordsB, collapsePoint);
-//    vertices[collapse->getA()]->setCoords(collapsePoint);
-//    double angleCollapse = Classifier::calcSolidAngleSum(collapse->getA(), &vertices, &cells);
-//    vertices[collapse->getA()]->setCoords(coordsA);
-//    // check for deviation in the solid angle to prevent dents in the boundary
-//    return (fabs(angleCollapse - angleA) <= 0);
-//}
+bool DynamicTest::testSolidAngle(EdgeCollapse *collapse, Tetragrid *grid) {
+    if (collapse->getA()->isInterior() && collapse->getB()->isInterior()) {
+        return true;
+    }
+    
+    double angleA = Classifier::calcSolidAngleSum(collapse->getA(), grid);
+    double collapsePoint[3];
+    double coordsA[3];
+    double coordsB[3];
+    collapse->getA()->getCoords(coordsA);
+    collapse->getB()->getCoords(coordsB);
+    Calculator::calcMidPoint(coordsA, coordsB, collapsePoint);
+    // simulate collpase & reverse
+    collapse->getA()->setCoords(collapsePoint);
+    double angleCollapse = Classifier::calcSolidAngleSum(collapse->getA(), grid);
+    collapse->getA()->setCoords(coordsA);
+    
+    // check for deviation in the solid angle to prevent dents in the boundary
+    return (fabs(angleCollapse - angleA) <= 0);
+}
