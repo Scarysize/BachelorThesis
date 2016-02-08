@@ -16,7 +16,9 @@
 using namespace std;
 
 double CostCalculations::calcCombinedCost(Vertex *a, Vertex *b, Tetragrid *grid) {
-    return calcEdgeLengthCost(a, b, grid) + calcEdgeEquityCost(a, b, grid);
+    return   1 * calcEdgeLengthCost(a, b, grid) +
+           200 * calcEdgeEquityCost(a, b, grid) +
+             1 * calcScalarCost(a, b, grid);
 }
 
 double CostCalculations::calcEdgeLengthCost(Vertex *a, Vertex *b, Tetragrid *grid) {
@@ -49,4 +51,8 @@ double CostCalculations::calcEdgeEquityCost(Vertex *a, Vertex *b, Tetragrid *gri
         a->setCoords(coordsA);
     }
     return sum;
+}
+
+double CostCalculations::calcScalarCost(Vertex *a, Vertex *b, Tetragrid *grid) {
+    return 0;
 }

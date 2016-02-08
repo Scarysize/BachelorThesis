@@ -74,6 +74,14 @@ void Vertex::deleteVertex() {
     this->deleted = true;
 }
 
+void Vertex::setModified(bool modified) {
+    this->modified = modified;
+}
+
+bool Vertex::isModified() {
+    return this->modified;
+}
+
 void Vertex::getCoords(double *coords) {
     coords[0] = this->coords[0];
     coords[1] = this->coords[1];

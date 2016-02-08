@@ -36,16 +36,24 @@ public:
     Tetragrid *getGrid() {
         return this->grid;
     }
+    
+    void setLimit(double limit) {
+        this->costLimit = limit;
+    }
+    
+    double getLimit() {
+        return this->costLimit;
+    }
 
     
 private:
     Tetragrid *grid;
     std::vector<EdgeCollapse*> prioq;
+    double costLimit;
     
     void buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid));
     void doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid));
-    void recalcQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid),
-                     EdgeCollapse *lastCollapse);
+    void recalcQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid), EdgeCollapse *lastCol);
   
 };
 

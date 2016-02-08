@@ -34,6 +34,7 @@ private:
     bool corner;
     
     bool deleted;
+    bool modified;
     double coords[3];
     
 public:
@@ -53,6 +54,9 @@ public:
     
     void deleteVertex();
     bool isDeleted();
+    
+    void setModified(bool modified);
+    bool isModified();
     
     
 };

@@ -62,31 +62,47 @@ void GridReducer::buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetra
     std::make_heap(collapses.begin(), collapses.end(), EdgeCollapse::CompareCost());
     this->prioq.clear();
     this->prioq = collapses;
+    double avrgCost = 0;
+    double min = 0;
+    double max = 0;
+    for (auto col : this->prioq) {
+        avrgCost += col->getCost();
+        if (min == 0 || col->getCost() < min) {
+            min = col->getCost();
+        }
+        if (max == 0 || col->getCost() > max) {
+            max = col->getCost();
+        }
+    }
+    this->setLimit(max);
+    cout << "INFO: average collapse cost: " << avrgCost / prioq.size() << endl;
+    cout << "INFO: lowest collapse cost:  " << min << endl;
+    cout << "INFO: highest collapse cost: " << max << endl;
 }
 
-void GridReducer::recalcQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid), EdgeCollapse *lastCollapse) {
+void GridReducer::recalcQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid), EdgeCollapse *lastCol) {
     vector<EdgeCollapse*> recalced;
     for (auto collapse : this->prioq) {
-        // Collapse uses deleted vertex -> replace deleted with new
-        if (collapse->getB() == lastCollapse->getB() ||
-            collapse->getA() == lastCollapse->getB()) {
-//            if (collapse->getB() == lastCollapse->getB()) {
-//                double cost = (*calculateCost)(collapse->getA(), lastCollapse->getA(), this->grid);
-//                recalced.push_back(new EdgeCollapse(collapse->getA(), lastCollapse->getA(), cost));
-//            } else {
-//                double cost = (*calculateCost)(collapse->getB(), lastCollapse->getA(), this->grid);
-//                recalced.push_back(new EdgeCollapse(collapse->getB(), lastCollapse->getA(), cost));
-//            }
+        if (collapse->getA()->isDeleted()) {
+//            double cost = (*calculateCost)(collapse->getB(), lastCol->getA(), this->grid);
+//            recalced.push_back(new EdgeCollapse(collapse->getB(), lastCol->getA(), cost));
+            continue;
+        } else if (collapse->getB()->isDeleted()) {
+//            double cost = (*calculateCost)(collapse->getA(), lastCol->getA(), this->grid);
+//            recalced.push_back(new EdgeCollapse(collapse->getA(), lastCol->getA(), cost));
             continue;
         }
-        // Collapse uses modified vertex -> recalc
-        else if (collapse->getA() == lastCollapse->getA() ||
-                 collapse->getB() == lastCollapse->getA()) {
-                double cost = (*calculateCost)(collapse->getA(), collapse->getB(), this->grid);
-                recalced.push_back(new EdgeCollapse(collapse->getA(), collapse->getB(), cost));
-            continue;
+        else if(collapse->getA()->isModified() || collapse->getB()->isModified()) {
+            double cost = (*calculateCost)(collapse->getA(), collapse->getB(), this->grid);
+            recalced.push_back(new EdgeCollapse(collapse->getA(), collapse->getB(), cost));
         } else {
             recalced.push_back(collapse);
+        }
+    }
+    // reset modified flag after recalculation
+    for (auto vertex : this->grid->vertices) {
+        if (!vertex->isDeleted() && vertex->isModified()) {
+            vertex->setModified(false);
         }
     }
     make_heap(recalced.begin(), recalced.end(), EdgeCollapse::CompareCost());
@@ -96,10 +112,15 @@ void GridReducer::recalcQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetr
 
 
 void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid)){
-    for (int x = 0; x < 1; x++) {
+    for (int x = 0; x < 3; x++) {
         for (int i = 0; !this->prioq.empty() /*&& i < 7*/; i++) {
             // 1. Get top most collapse from heap
             EdgeCollapse *top = this->prioq.front();
+            
+            if (top->getCost() > this->getLimit()) {
+                cout << "INFO: limit reached" << endl;
+                break;
+            }
             
             /*
              TESTS/SIMLATION:
@@ -128,12 +149,14 @@ void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, Tetra
             Calculator::calcMidPoint(coordsA, coordsB, collapsePoint);
             // 3. Update coords of vertex A to collapse coords
             top->getA()->setCoords(collapsePoint);
+            //    Mark B as deleted, A as modified, updates incidents on A
             top->getB()->deleteVertex();
+            top->getA()->setModified(true);
+            top->getA()->incidents = ncells;
             
             // 4. Replace vertex B with vertex A in NCELLS
             for (auto ncell : ncells) {
                 if (!ncell->deleted) {
-                    // cout << "modifying: " << ncell->id << endl;
                     vector<Vertex*> updated;
                     for (auto vertex : ncell->vertices) {
                         if (vertex == top->getB()) {
@@ -150,7 +173,6 @@ void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, Tetra
             // 5. Delete all ICELLS
             for (auto icell : icells) {
                 if (!icell->deleted) {
-                    // cout << "deleting: " << icell->id << endl;
                     icell->deleteCell();
                 }
             }
@@ -162,6 +184,6 @@ void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, Tetra
             // 7. Recalculate the queue
             recalcQueue(calculateCost, top);
         }
-        // buildQueue(calculateCost);
+        buildQueue(calculateCost);
     }
 }

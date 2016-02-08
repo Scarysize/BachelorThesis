@@ -209,18 +209,18 @@ void startRenderingGrid(vtkUnstructuredGrid *grid, vtkRenderWindow *renWin) {
     iren->Start();
 }
 
-vtkSmartPointer<vtkUnstructuredGrid> generateSimpleGrid() {
+vtkSmartPointer<vtkUnstructuredGrid> generateSimpleGrid(int dimensions) {
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    for (int k = 0; k < 10; k++) {
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 10; j++) {
+    for (int k = 0; k < dimensions; k++) {
+        for (int i = 0; i < dimensions; i++) {
+            for (int j = 0; j < dimensions; j++) {
                 points->InsertNextPoint(i, j, k);
             }
         }
     }
     vtkSmartPointer<vtkStructuredGrid> grid = vtkSmartPointer<vtkStructuredGrid>::New();
     grid->SetPoints(points);
-    grid->SetDimensions(10, 10, 10);
+    grid->SetDimensions(dimensions, dimensions, dimensions);
     
     vtkSmartPointer<vtkAppendFilter> appender = vtkSmartPointer<vtkAppendFilter>::New();
     appender->SetInputData(grid);
@@ -235,13 +235,13 @@ int main(int argc, const char * argv[]) {
     
     vtkSmartPointer<vtkGenericDataObjectReader> reader = vtkSmartPointer<vtkGenericDataObjectReader>::New();
     
-    // string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Dambreak/00_damBreak_2d/01_inter/VTK/01_inter_50.vtk";
+    string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Dambreak/00_damBreak_2d/01_inter/VTK/01_inter_50.vtk";
     // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Rinne/inter_RHG/VTK/01_inter_RHG_BHQ1_SA_mesh01_0.vtk";
     // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Wehr/01_inter_wehr/VTK/01_inter_wehr_LES_SpalartAllmarasDDES_12891.vtk";
     // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/dambreak_merged4x.vtk";
     // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/dambreak4x.vtk";
     // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/wehr_clipped.vtk";
-    string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/dambreak_reduced.vtk";
+    // string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/dambreak_reduced.vtk";
     reader->SetFileName(inputFilename.c_str());
     reader->Update();
     
@@ -255,7 +255,7 @@ int main(int argc, const char * argv[]) {
         gridReader->SetFileName(inputFilename.c_str());
         gridReader->Update();
         
-        vtkSmartPointer<vtkUnstructuredGrid> simpleGrid = generateSimpleGrid();
+        vtkSmartPointer<vtkUnstructuredGrid> simpleGrid = generateSimpleGrid(5);
         // std::cout << "_original_ number of cells: " << gridReader->GetOutput()->GetNumberOfCells() << std::endl;
         
         
@@ -270,19 +270,25 @@ int main(int argc, const char * argv[]) {
         vtkSmartPointer<vtkUnstructuredGrid>  tetraGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
         tetraGrid = triangleFilter->GetOutput();
         
+        clock_t start = clock();
+        
         Tetragrid *myGrid = Tetragrid::createGrid(tetraGrid);
         tetraGrid = NULL;
         myGrid->precalculations();
         GridReducer *reducer = new GridReducer(myGrid);
         reducer->run(&CostCalculations::calcCombinedCost);
-      
+        
+        clock_t finish = clock();
+        
         vtkSmartPointer<vtkUnstructuredGrid> postColGrid = Helper::makeGrid(myGrid);
         writeUgrid(postColGrid, "/Volumes/EXTERN/Bachelor Arbeit/test_20160208.vtu");
         
         free(reducer);
         free(myGrid);
         
-        std::cout << "INFO: done -----------------" << std::endl;
+        float runtime((float) finish - (float) start);
+        cout << "INFO: runtime: " << runtime << endl;
+        cout << "INFO: done -----------------" << endl;
     } else if (reader->IsFileStructuredGrid()) {
         std::cout << "input file is structured grid" << std::endl;
     } else {

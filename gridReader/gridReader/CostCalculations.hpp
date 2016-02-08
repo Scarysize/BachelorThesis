@@ -20,6 +20,7 @@ public:
     static double calcCombinedCost(Vertex *a, Vertex *b, Tetragrid *grid);
     static double calcEdgeLengthCost(Vertex *a, Vertex *b, Tetragrid *grid);
     static double calcEdgeEquityCost(Vertex *a, Vertex *b, Tetragrid *grid);
+    static double calcScalarCost(Vertex *a, Vertex *b, Tetragrid *grid);
 };
 
 #endif /* CostCalculations_hpp */
