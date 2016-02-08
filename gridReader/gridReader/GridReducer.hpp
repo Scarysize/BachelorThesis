@@ -31,7 +31,7 @@ public:
         delete this->grid;
     }
     
-    void run(double (*calculateCost)(Vertex *a, Vertex *b, vector<Cell*>*, vector<Vertex*>*));
+    void run(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid));
     
     Tetragrid *getGrid() {
         return this->grid;
@@ -42,9 +42,9 @@ private:
     Tetragrid *grid;
     std::vector<EdgeCollapse*> prioq;
     
-    void buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, vector<Cell*>*, vector<Vertex*>*));
-    void doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, vector<Cell*>*, vector<Vertex*>*));
-    void recalcQueue(double (*calculateCost)(Vertex *a, Vertex *b, vector<Cell*>*, vector<Vertex*>*),
+    void buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid));
+    void doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid));
+    void recalcQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid),
                      EdgeCollapse *lastCollapse);
   
 };

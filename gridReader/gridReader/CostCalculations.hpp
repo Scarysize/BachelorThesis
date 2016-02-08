@@ -12,13 +12,14 @@
 #include <stdio.h>
 #include <vector>
 
-#include "Vertex.hpp"
-#include "Cell.hpp"
-using namespace std;
 
+class Tetragrid;
+class Vertex;
 class CostCalculations {
 public:
-    static double calcEdgeLengthCost(Vertex *a, Vertex *b, vector<Cell*> *cells, vector<Vertex*> *vertices);
+    static double calcCombinedCost(Vertex *a, Vertex *b, Tetragrid *grid);
+    static double calcEdgeLengthCost(Vertex *a, Vertex *b, Tetragrid *grid);
+    static double calcEdgeEquityCost(Vertex *a, Vertex *b, Tetragrid *grid);
 };
 
 #endif /* CostCalculations_hpp */

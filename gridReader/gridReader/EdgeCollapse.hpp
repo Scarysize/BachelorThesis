@@ -37,19 +37,6 @@ public:
     
     
 public:
-    static bool compareVertices(EdgeCollapse &col1, EdgeCollapse &col2) {
-        if ((col1.getA() == col2.getA() &&
-             col1.getB() == col2.getB()) ||
-            (col1.getA() == col2.getB() &&
-             col1.getB() == col2.getA())) {
-                return true;
-            }
-        return false;
-
-    }
-    std::set<int> ncells;
-    std::set<int> icells;
-    
     // GETTER
     Vertex *getA();
     Vertex *getB();
@@ -57,15 +44,11 @@ public:
     
     // SETTER
     void setCost(double cost);
-    void setNcells(std::set<int> ncells);
-    void setIcells(std::set<int> icells);
-
 
 private:
     double cost;
     Vertex *A;
     Vertex *B;
-    double collapsePoint[3];
 };
 
 

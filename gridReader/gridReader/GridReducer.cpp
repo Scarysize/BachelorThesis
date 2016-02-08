@@ -16,13 +16,13 @@
 
 using namespace std;
 
-void GridReducer::run(double (*calculateCost)(Vertex*, Vertex*, vector<Cell*>*, vector<Vertex*>*)) {
+void GridReducer::run(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid)) {
     buildQueue(calculateCost);
     doCollapse(calculateCost);
     // do collapses & recalculations
 }
 
-void GridReducer::buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, vector<Cell*>*, vector<Vertex*>*)) {
+void GridReducer::buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid)) {
     // run classifier
     Classifier::classifyVertices(this->grid);
     cout << "DONE: vertex classification" << endl;
@@ -39,6 +39,9 @@ void GridReducer::buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, vecto
             for (auto edge : cell->edges) {
                 Vertex *a = edge->getA();
                 Vertex *b = edge->getB();
+                if (a->isDeleted() || b->isDeleted()) {
+                    continue;
+                }
                 Edge *checkEdge = Edge::isEdge(a, b, &traversed);
                 
                 // check if edge was already traversed
@@ -49,7 +52,7 @@ void GridReducer::buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, vecto
                     // check if edge is either inner or boundary edge (everything else can´t be collapsed)
                     if (Classifier::isInnerEdge(a, b) ||
                         Classifier::isBoundaryEdge(a, b)) {
-                        double cost = (*calculateCost)(a, b, &this->grid->cells, &this->grid->vertices);
+                        double cost = (*calculateCost)(a, b, this->grid);
                         collapses.push_back(new EdgeCollapse(a, b, cost));
                     }
                 }
@@ -57,34 +60,42 @@ void GridReducer::buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, vecto
         }
     }
     std::make_heap(collapses.begin(), collapses.end(), EdgeCollapse::CompareCost());
+    this->prioq.clear();
     this->prioq = collapses;
 }
 
-void GridReducer::recalcQueue(double (*calculateCost)(Vertex *, Vertex *, vector<Cell *>*, vector<Vertex*>*), EdgeCollapse *lastCollapse) {
+void GridReducer::recalcQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid), EdgeCollapse *lastCollapse) {
     vector<EdgeCollapse*> recalced;
     for (auto collapse : this->prioq) {
-        // Collapse uses deleted vertex -> remove
+        // Collapse uses deleted vertex -> replace deleted with new
         if (collapse->getB() == lastCollapse->getB() ||
             collapse->getA() == lastCollapse->getB()) {
+//            if (collapse->getB() == lastCollapse->getB()) {
+//                double cost = (*calculateCost)(collapse->getA(), lastCollapse->getA(), this->grid);
+//                recalced.push_back(new EdgeCollapse(collapse->getA(), lastCollapse->getA(), cost));
+//            } else {
+//                double cost = (*calculateCost)(collapse->getB(), lastCollapse->getA(), this->grid);
+//                recalced.push_back(new EdgeCollapse(collapse->getB(), lastCollapse->getA(), cost));
+//            }
             continue;
         }
         // Collapse uses modified vertex -> recalc
         else if (collapse->getA() == lastCollapse->getA() ||
                  collapse->getB() == lastCollapse->getA()) {
-//            double cost = (*calculateCost)(collapse->getA(), collapse->getB(), &this->grid->cells, &this->grid->vertices);
-//            collapse->setCost(cost);
-//            recalced.push_back(collapse);
+                double cost = (*calculateCost)(collapse->getA(), collapse->getB(), this->grid);
+                recalced.push_back(new EdgeCollapse(collapse->getA(), collapse->getB(), cost));
             continue;
         } else {
             recalced.push_back(collapse);
         }
     }
     make_heap(recalced.begin(), recalced.end(), EdgeCollapse::CompareCost());
+    this->prioq.clear();
     this->prioq = recalced;
 }
 
 
-void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, vector<Cell*>*, vector<Vertex*>*)){
+void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid)){
     for (int x = 0; x < 1; x++) {
         for (int i = 0; !this->prioq.empty() /*&& i < 7*/; i++) {
             // 1. Get top most collapse from heap
@@ -117,6 +128,7 @@ void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, vecto
             Calculator::calcMidPoint(coordsA, coordsB, collapsePoint);
             // 3. Update coords of vertex A to collapse coords
             top->getA()->setCoords(collapsePoint);
+            top->getB()->deleteVertex();
             
             // 4. Replace vertex B with vertex A in NCELLS
             for (auto ncell : ncells) {

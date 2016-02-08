@@ -7,6 +7,7 @@
 //
 
 #include "Edge.hpp"
+#include "Calculator.h"
 
 Edge *Edge::isEdge(Vertex *a, Vertex *b, vector<Edge *> *edges) {
     for (auto edge : *edges) {
@@ -16,4 +17,12 @@ Edge *Edge::isEdge(Vertex *a, Vertex *b, vector<Edge *> *edges) {
         }
     }
     return nullptr;
+}
+
+double Edge::calcEdgeLength() {
+    double coordsA[3];
+    double coordsB[3];
+    this->a->getCoords(coordsA);
+    this->b->getCoords(coordsB);
+    return Calculator::calcEdgeLength(coordsA, coordsB);
 }

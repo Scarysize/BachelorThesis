@@ -38,6 +38,8 @@ public:
         this->deleted = true;
     }
     
+    double avrgEdgeLength();
+    
 };
 
 #endif /* Cell_hpp */

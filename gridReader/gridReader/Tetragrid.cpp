@@ -41,18 +41,6 @@ Tetragrid *Tetragrid::createGrid(vtkUnstructuredGrid *grid) {
     }
     
     Tetragrid *tetragrid = new Tetragrid(cells, edges, vertices);
-//    for (auto cell : cells) {
-//        delete cell;
-//    }
-//    cells.clear();
-//    for (auto vertex : vertices) {
-//        delete vertex;
-//    }
-//    vertices.clear();
-//    for (auto edge : edges) {
-//        delete edge;
-//    }
-//    edges.clear();
     return tetragrid;
 }
 

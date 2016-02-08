@@ -40,6 +40,8 @@ public:
         return this->length;
     }
     
+    double calcEdgeLength();
+
 private:
     double length;
     Vertex *a;

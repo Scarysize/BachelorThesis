@@ -72,6 +72,9 @@ void Classifier::classifyVertices(Tetragrid *grid) {
 
 double Classifier::calcSolidAngleSum(Vertex *seed, Tetragrid *grid) {
     double solidAngleSum = 0;
+    if (seed->isDeleted()) {
+        return solidAngleSum;
+    }
     for (auto cell : seed->incidents) {
         if (!cell->deleted) {
             

@@ -16,7 +16,7 @@ Vertex::Vertex(int id, double coords[3]) {
     this->boundary = false;
     this->interior = false;
     this->corner = false;
-    this->modified = true;
+    this->deleted = false;
     this->incidents = vector<Cell*>();
 }
 
@@ -66,12 +66,12 @@ double *Vertex::getCoords() {
     return this->coords;
 }
 
-bool Vertex::wasModified() {
-    return this->modified;
+bool Vertex::isDeleted() {
+    return this->deleted;
 }
 
-void Vertex::setModified(bool mod) {
-    this->modified = mod;
+void Vertex::deleteVertex() {
+    this->deleted = true;
 }
 
 void Vertex::getCoords(double *coords) {

@@ -33,7 +33,7 @@ private:
     bool interior;
     bool corner;
     
-    bool modified;
+    bool deleted;
     double coords[3];
     
 public:
@@ -51,8 +51,8 @@ public:
     void setToInterior();
     void setToCorner();
     
-    void setModified(bool mod);
-    bool wasModified();
+    void deleteVertex();
+    bool isDeleted();
     
     
 };
