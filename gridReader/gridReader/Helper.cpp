@@ -6,6 +6,9 @@
 //  Copyright © 2015 Franz Neubert. All rights reserved.
 //
 
+#include <vtkDataArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 #include <vtkTetra.h>
 
@@ -40,11 +43,21 @@ vtkSmartPointer<vtkUnstructuredGrid> Helper::makeGrid(Tetragrid *grid) {
     
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
     points->SetNumberOfPoints(grid->vertices.size());
+    vtkSmartPointer<vtkDoubleArray> pointData = vtkSmartPointer<vtkDoubleArray>::New();
+    vector<vtkDoubleArray*> scalarArrays;
+    for (auto scalar : *grid->vertices.at(0)->getScalars()) {
+        scalarArrays.push_back(vtkDoubleArray::New());
+    }
     int i = 0;
     for (auto vertex : grid->vertices) {
         double coords[3];
         vertex->getCoords(coords);
         points->InsertPoint(i, coords[0], coords[1], coords[2]);
+        int scalarCounter = 0;
+        for (auto scalar : *vertex->getScalars()) {
+            scalarArrays.at(scalarCounter)->InsertTuple1(i, scalar);
+            scalarCounter++;
+        }
         i++;
     }
     
@@ -59,5 +72,11 @@ vtkSmartPointer<vtkUnstructuredGrid> Helper::makeGrid(Tetragrid *grid) {
         }
     }
     ugrid->SetPoints(points);
+    int x = 0;
+    for (auto scalarArray : scalarArrays) {
+        ugrid->GetPointData()->AddArray(scalarArray);
+        ugrid->GetPointData()->GetArray(x)->SetName(grid->vertices.at(0)->getScalarNames()->at(x).c_str());
+        x++;
+    }
     return ugrid;
 }

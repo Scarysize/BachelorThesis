@@ -35,5 +35,69 @@
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "gridReader/GridReducer.cpp"
+            timestampString = "477063955.294984"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "33"
+            endingLineNumber = "33"
+            landmarkName = "GridReducer::buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid))"
+            landmarkType = "5">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "GridReducer::buildQueue(double (*)(Vertex*, Vertex*, Tetragrid*))"
+                  moduleName = "gridReader"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Volumes/EXTERN/Bachelor%20Arbeit/XCode/BachelorThesis/gridReader/gridReader/GridReducer.cpp"
+                  timestampString = "477064459.077119"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "33"
+                  endingLineNumber = "33"
+                  offsetFromSymbolStart = "384">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "GridReducer::buildQueue(double (*)(Vertex*, Vertex*, Tetragrid*))"
+                  moduleName = "gridReader"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Volumes/EXTERN/Bachelor%20Arbeit/XCode/BachelorThesis/gridReader/gridReader/GridReducer.cpp"
+                  timestampString = "477064459.077608"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "33"
+                  endingLineNumber = "33"
+                  offsetFromSymbolStart = "804">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "gridReader/Tetragrid.cpp"
+            timestampString = "477064342.331534"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "45"
+            endingLineNumber = "45"
+            landmarkName = "Tetragrid::createGrid(vtkUnstructuredGrid *grid)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

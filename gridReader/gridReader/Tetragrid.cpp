@@ -18,20 +18,19 @@ using namespace std;
 Tetragrid *Tetragrid::createGrid(vtkUnstructuredGrid *grid) {
     vector<Cell*> cells;
     vector<Vertex*> vertices = Vertex::verticesFromGrid(grid);
-    vector<Edge*> edges;
-    
+    // vector<Edge*> edges;
+    set<Edge> edges;
     
     for (vtkIdType cell = 0; cell < grid->GetNumberOfCells(); cell++) {
         vector<Edge*> cellEdges;
         for (vtkIdType edge = 0; edge < grid->GetCell(cell)->GetNumberOfEdges(); edge++) {
             int vtkA = (int) grid->GetCell((int)cell)->GetEdge((int)edge)->GetPointId(0);
             int vtkB = (int) grid->GetCell((int)cell)->GetEdge((int)edge)->GetPointId(1);
-            Edge *checkEdge = Edge::isEdge(vertices.at(vtkA), vertices.at(vtkB), &edges);
-            if (checkEdge == nullptr) {
-                checkEdge = new Edge(vertices.at(vtkA), vertices.at(vtkB));
-                edges.push_back(checkEdge);
+            Edge checkEdge = *new Edge(vertices.at(vtkA), vertices.at(vtkB));
+            if (edges.find(checkEdge) == edges.end()) {
+                edges.insert(checkEdge);
             }
-            cellEdges.push_back(checkEdge);
+            cellEdges.push_back(&checkEdge);
         }
         vector<Vertex*> cellVertices;
         for (vtkIdType point = 0; point < grid->GetCell(cell)->GetNumberOfPoints(); point++) {
@@ -39,8 +38,11 @@ Tetragrid *Tetragrid::createGrid(vtkUnstructuredGrid *grid) {
         }
         cells.push_back(new Cell((int)cell, cellVertices, cellEdges));
     }
-    
-    Tetragrid *tetragrid = new Tetragrid(cells, edges, vertices);
+    vector<Edge*> edgePointers;
+    for (auto edge : edges) {
+        edgePointers.push_back(new Edge(edge.getA(), edge.getB()));
+    }
+    Tetragrid *tetragrid = new Tetragrid(cells, edgePointers, vertices);
     return tetragrid;
 }
 

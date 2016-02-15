@@ -27,46 +27,29 @@ void GridReducer::buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetra
     Classifier::classifyVertices(this->grid);
     cout << "DONE: vertex classification" << endl;
     
+    cout << "INFO: starting cost calculation" << endl;
     vector<EdgeCollapse*> collapses;
-    vector<Edge*> traversed;
-    int counter = 0;
-    for (auto cell : this->grid->cells) {
-        if (!cell->deleted) {
-            counter++;
-            if (counter%500 == 0) {
-                std::cout << "INFO: cells traversed: " << counter << std::endl;
-            }
-            for (auto edge : cell->edges) {
-                Vertex *a = edge->getA();
-                Vertex *b = edge->getB();
-                if (a->isDeleted() || b->isDeleted()) {
-                    continue;
-                }
-                Edge *checkEdge = Edge::isEdge(a, b, &traversed);
-                
-                // check if edge was already traversed
-                if (checkEdge == nullptr) {
-                    // mark edge as traversed
-                    traversed.push_back(new Edge(a, b));
-                    
-                    // check if edge is either inner or boundary edge (everything else can´t be collapsed)
-                    if (Classifier::isInnerEdge(a, b) ||
-                        Classifier::isBoundaryEdge(a, b)) {
-                        double cost = (*calculateCost)(a, b, this->grid);
-                        collapses.push_back(new EdgeCollapse(a, b, cost));
-                    }
-                }
-            }
+    set<Edge*> traversed;
+    for (auto edge : this->grid->edges) {
+        if (edge->getA()->isDeleted() || edge->getB()->isDeleted()) {
+            continue;
+        }
+        
+        if (Classifier::isInnerEdge(edge->getA(), edge->getB()) ||
+            Classifier::isBoundaryEdge(edge->getA(), edge->getB())) {
+            double cost = (*calculateCost)(edge->getA(), edge->getB(), this->grid);
+            collapses.push_back(new EdgeCollapse(edge->getA(), edge->getB(), cost));
         }
     }
     std::make_heap(collapses.begin(), collapses.end(), EdgeCollapse::CompareCost());
     this->prioq.clear();
     this->prioq = collapses;
-    double avrgCost = 0;
+    cout << "INFO: heap size: " << this->prioq.size() << endl;
+    double completeCosts = 0;
     double min = 0;
     double max = 0;
     for (auto col : this->prioq) {
-        avrgCost += col->getCost();
+        completeCosts += col->getCost();
         if (min == 0 || col->getCost() < min) {
             min = col->getCost();
         }
@@ -74,8 +57,8 @@ void GridReducer::buildQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetra
             max = col->getCost();
         }
     }
-    this->setLimit(max);
-    cout << "INFO: average collapse cost: " << avrgCost / prioq.size() << endl;
+    this->setLimit(completeCosts / this->prioq.size());
+    cout << "INFO: average collapse cost: " << completeCosts / this->prioq.size() << endl;
     cout << "INFO: lowest collapse cost:  " << min << endl;
     cout << "INFO: highest collapse cost: " << max << endl;
 }
@@ -112,7 +95,7 @@ void GridReducer::recalcQueue(double (*calculateCost)(Vertex *a, Vertex *b, Tetr
 
 
 void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, Tetragrid *grid)){
-    for (int x = 0; x < 3; x++) {
+    for (int x = 0; x < 1; x++) {
         for (int i = 0; !this->prioq.empty() /*&& i < 7*/; i++) {
             // 1. Get top most collapse from heap
             EdgeCollapse *top = this->prioq.front();
@@ -128,13 +111,13 @@ void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, Tetra
              */
             if (!DynamicTest::testSolidAngle(top, this->grid)) {
                 this->prioq.erase(this->prioq.begin());
-                std::cout << "INFO: REJECTED: " << top->getA()->getId() << " -- " << top->getB()->getId() << std::endl;
+                // std::cout << "INFO: REJECTED: " << top->getA()->getId() << " -- " << top->getB()->getId() << std::endl;
                 continue;
             }
             
             vector<Cell*> ncells = Connectivity::getNcells(top->getA(), top->getB());
             vector<Cell*> icells = Connectivity::getIcells(top->getA(), top->getB());
-            cout << "INFO: collapsing: " << top->getA()->getId() << " -- " << top->getB()->getId() << endl;
+            // cout << "INFO: collapsing: " << top->getA()->getId() << " -- " << top->getB()->getId() << endl;
             if (icells.size() == 0) {
                 cout << "WARN: number of icells 0: " << endl;
             }
@@ -153,6 +136,13 @@ void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, Tetra
             top->getB()->deleteVertex();
             top->getA()->setModified(true);
             top->getA()->incidents = ncells;
+            
+            //    Update alphawater
+            if (top->getA()->getScalars()->size() == top->getB()->getScalars()->size()) {
+                for (int s = 0; s < top->getA()->getScalars()->size(); s++) {
+                    top->getA()->getScalars()->at(s) = (top->getA()->getScalars()->at(s) + top->getB()->getScalars()->at(s))/2;
+                }
+            }
             
             // 4. Replace vertex B with vertex A in NCELLS
             for (auto ncell : ncells) {

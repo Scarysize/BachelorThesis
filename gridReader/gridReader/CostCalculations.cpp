@@ -54,5 +54,14 @@ double CostCalculations::calcEdgeEquityCost(Vertex *a, Vertex *b, Tetragrid *gri
 }
 
 double CostCalculations::calcScalarCost(Vertex *a, Vertex *b, Tetragrid *grid) {
+    if (a->getHasValues() && b->getHasValues()) {
+        double sum = 0;
+        if (a->getScalars()->size() == b->getScalars()->size()) {
+            for (int i = 0; i < a->getScalars()->size(); i++) {
+                sum += fabs(a->getScalars()->at(i) - b->getScalars()->at(i));
+            }
+        }
+        return sum;
+    }
     return 0;
 }

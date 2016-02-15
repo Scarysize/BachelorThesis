@@ -17,6 +17,19 @@ using namespace std;
 
 class Edge {
 public:
+    
+    bool operator< (const Edge &edge) const {
+        bool result = true;
+        if (min(a->getId(), b->getId()) < min(edge.a->getId(), edge.b->getId())) {
+            result = true;
+        } else if (min(edge.a->getId(), edge.b->getId()) < min(a->getId(), b->getId())) {
+            result = false;
+        } else {
+            result = (max(a->getId(), b->getId()) < max(edge.a->getId(), edge.b->getId()));
+        }
+        return result;
+    }
+    
     Edge(Vertex *a, Vertex *b) {
         this->a = a;
         this->b = b;
@@ -41,6 +54,19 @@ public:
     }
     
     double calcEdgeLength();
+    
+    struct CompareEdge {
+        bool operator()(Edge *edge1, Edge *edge2) {
+            if ((edge1->getA() == edge2->getA() ||
+                edge1->getA() == edge2->getB())
+                &&
+                (edge1->getB() == edge2->getB() ||
+                 edge1->getB() == edge2->getA())) {
+                return true;
+            }
+            return false;
+        }
+    };
 
 private:
     double length;

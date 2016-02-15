@@ -9,6 +9,8 @@
 #include "Edge.hpp"
 #include "Calculator.h"
 
+
+
 Edge *Edge::isEdge(Vertex *a, Vertex *b, vector<Edge *> *edges) {
     for (auto edge : *edges) {
         if ((edge->getA() == a || edge->getB() == a) &&

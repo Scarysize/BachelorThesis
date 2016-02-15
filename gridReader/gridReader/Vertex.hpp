@@ -20,6 +20,8 @@ class Cell;
 class Vertex {
 public:
     Vertex(int id, double coords[3]);
+    Vertex(int id, double coords[3], vector<double> scalars);
+    
     ~Vertex() {
         for (auto cell : this->incidents) {
             delete cell;
@@ -36,6 +38,10 @@ private:
     bool deleted;
     bool modified;
     double coords[3];
+    
+    bool hasValues;
+    vector<double> scalars;
+    vector<string> scalarNames;
     
 public:
     vector<Cell*> incidents;
@@ -58,6 +64,19 @@ public:
     void setModified(bool modified);
     bool isModified();
     
+    void setHasValues(bool hashValue);
+    bool getHasValues();
+    
+    void setScalars(vector<double> values);
+    vector<double> *getScalars();
+    
+    void setScalarNames(vector<string> names) {
+        this->scalarNames = names;
+    }
+    
+    vector<string> *getScalarNames() {
+        return &this->scalarNames;
+    }
     
 };
 
