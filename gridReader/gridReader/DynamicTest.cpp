@@ -6,6 +6,7 @@
 //  Copyright © 2015 Franz Neubert. All rights reserved.
 //
 
+#include "Connectivity.hpp"
 #include "DynamicTest.hpp"
 #include "Classifier.hpp"
 
@@ -44,9 +45,10 @@ bool DynamicTest::testSolidAngle(EdgeCollapse *collapse, Tetragrid *grid) {
     collapse->getA()->getCoords(coordsA);
     collapse->getB()->getCoords(coordsB);
     Calculator::calcMidPoint(coordsA, coordsB, collapsePoint);
-    // simulate collpase & reverse
+    // simulate collpase
     collapse->getA()->setCoords(collapsePoint);
     double angleCollapse = Classifier::calcSolidAngleSum(collapse->getA(), grid);
+    // reverse simulation
     collapse->getA()->setCoords(coordsA);
     
     // check for deviation in the solid angle to prevent dents in the boundary

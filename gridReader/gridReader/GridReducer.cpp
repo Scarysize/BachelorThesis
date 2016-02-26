@@ -137,7 +137,6 @@ void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, Tetra
             top->getA()->setModified(true);
             top->getA()->incidents = ncells;
             
-            //    Update alphawater
             if (top->getA()->getScalars()->size() == top->getB()->getScalars()->size()) {
                 for (int s = 0; s < top->getA()->getScalars()->size(); s++) {
                     top->getA()->getScalars()->at(s) = (top->getA()->getScalars()->at(s) + top->getB()->getScalars()->at(s))/2;
@@ -174,6 +173,6 @@ void GridReducer::doCollapse(double (*calculateCost)(Vertex *a, Vertex *b, Tetra
             // 7. Recalculate the queue
             recalcQueue(calculateCost, top);
         }
-        buildQueue(calculateCost);
+        // buildQueue(calculateCost);
     }
 }

@@ -15,6 +15,14 @@
 
 using namespace std;
 
+/* 
+ define the weighs for each cost function.
+ Recommended:
+    - Edgelength:  1
+    - EdgeEquity:  200
+    - ScalarCost:  1
+    - (VolumeCost: 500)
+*/
 double CostCalculations::calcCombinedCost(Vertex *a, Vertex *b, Tetragrid *grid) {
     return   1 * calcEdgeLengthCost(a, b, grid) +
            200 * calcEdgeEquityCost(a, b, grid) +

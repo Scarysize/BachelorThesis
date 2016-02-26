@@ -235,13 +235,8 @@ int main(int argc, const char * argv[]) {
     
     vtkSmartPointer<vtkGenericDataObjectReader> reader = vtkSmartPointer<vtkGenericDataObjectReader>::New();
     
-    string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Dambreak/00_damBreak_2d/01_inter/VTK/01_inter_50.vtk";
-    // string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Rinne/inter_RHG/VTK/01_inter_RHG_BHQ1_SA_mesh01_0.vtk";
-    // string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/Wehr/01_inter_wehr/VTK/01_inter_wehr_LES_SpalartAllmarasDDES_12891.vtk";
-    // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/dambreak_merged4x.vtk";
-    // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/dambreak4x.vtk";
-    // std::string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/wehr_clipped.vtk";
-    // string inputFilename = "/Volumes/EXTERN/Bachelor Arbeit/OpenFOAM_Daten/dambreak_reduced.vtk";
+    string inputFilename = ""; // Point this to a .vtk file (absolute path)
+
     reader->SetFileName(inputFilename.c_str());
     reader->Update();
     
@@ -256,15 +251,15 @@ int main(int argc, const char * argv[]) {
         gridReader->Update();
         
         vtkSmartPointer<vtkUnstructuredGrid> simpleGrid = generateSimpleGrid(10);
-        // std::cout << "_original_ number of cells: " << gridReader->GetOutput()->GetNumberOfCells() << std::endl;
         
-        
-        // -----------------
         // quad to tetra
-        // -----------------
         vtkSmartPointer<vtkDataSetTriangleFilter> triangleFilter = vtkSmartPointer<vtkDataSetTriangleFilter>::New();
-        triangleFilter->SetInputConnection(gridReader->GetOutputPort());
-        // triangleFilter->SetInputData(simpleGrid);
+        
+        /* out comment line below to take grid data from configured file */
+        // triangleFilter->SetInputConnection(gridReader->GetOutputPort());
+        
+        /* use a generated cube grid, comment if you want to use data from a file (see above) */
+        triangleFilter->SetInputData(simpleGrid);
         triangleFilter->Update();
         cout << "INFO: cells after triangulation: " << triangleFilter->GetOutput()->GetNumberOfCells() << endl;
         vtkSmartPointer<vtkUnstructuredGrid>  tetraGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
@@ -281,13 +276,13 @@ int main(int argc, const char * argv[]) {
         clock_t finish = clock();
         
         vtkSmartPointer<vtkUnstructuredGrid> postColGrid = Helper::makeGrid(myGrid);
-        writeUgrid(postColGrid, "/Volumes/EXTERN/Bachelor Arbeit/test_20160215.vtu");
+        writeUgrid(postColGrid, ""); // write out the result to a .vtu file
         
         free(reducer);
         free(myGrid);
         
         float runtime((float) finish - (float) start);
-        cout << "INFO: runtime: " << runtime << endl;
+        cout << "INFO: runtime: " << runtime / CLOCKS_PER_SEC << endl;
         cout << "INFO: done -----------------" << endl;
     } else if (reader->IsFileStructuredGrid()) {
         std::cout << "input file is structured grid" << std::endl;

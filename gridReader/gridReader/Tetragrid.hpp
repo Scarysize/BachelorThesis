@@ -28,6 +28,7 @@ public:
         this->vertices = vertices;
     }
     
+    // #riskystuff
     ~Tetragrid() {
         for (auto cell : this->cells) {
             delete cell;

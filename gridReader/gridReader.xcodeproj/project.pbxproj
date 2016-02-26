@@ -573,8 +573,6 @@
 		30CCB48B1BE7A6AE007E1DD0 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				30DA17921C649A3F00A9A67E /* Edge.cpp */,
-				30DA178E1C649A0000A9A67E /* Tetragrid.cpp */,
 				30CCB48E1BE7A890007E1DD0 /* Calculator.cpp */,
 				304EAF4A1C2454A800CA03D1 /* Cell.cpp */,
 				30284E271C25BE3300B94EC2 /* Classifier.cpp */,
@@ -582,10 +580,12 @@
 				30284E241C25915E00B94EC2 /* CostCalculations.cpp */,
 				30ECE4C21BEB6A2600267D99 /* CostCalculator.cpp */,
 				30CB3E461C241D0B00238557 /* DynamicTest.cpp */,
+				30DA17921C649A3F00A9A67E /* Edge.cpp */,
 				30ECE4C51BEBEBF600267D99 /* EdgeCollapse.cpp */,
 				30284E211C2585F500B94EC2 /* GridReducer.cpp */,
 				30A9929B1BF396BB0009B444 /* Helper.cpp */,
 				300ED9591BC7A619004E96DF /* main.cpp */,
+				30DA178E1C649A0000A9A67E /* Tetragrid.cpp */,
 				30EAD7211C15DF9A005C8052 /* Vertex.cpp */,
 			);
 			name = Source;
